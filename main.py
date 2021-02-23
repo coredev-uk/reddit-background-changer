@@ -12,14 +12,14 @@ Settings
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ '''
 SETTINGS = {
     "searhLimit": 5,
-    "subreddits-night": ['spaceporn', 'sunset'],
-    "subreddits-day": ['earthporn', 'skyporn']
+    "subreddits-night": ['spaceporn'], #sunset
+    "subreddits-day": ['earthporn'] #skyporn
 }
 
 ''' ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Check if its Night
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ '''
-now = datetime.now()
+now = datetime.now() 
 now_time = now.time()
 city = LocationInfo("Dover", "England", "Europe/London", 51.154323, 1.290054)
 s = sun(city.observer, date=now)

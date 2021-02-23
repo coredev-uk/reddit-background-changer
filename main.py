@@ -12,8 +12,8 @@ Settings
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ '''
 SETTINGS = {
     "searhLimit": 5,
-    "subreddits-night": ['sunset'],
-    "subreddits-day": ['earthporn']
+    "subreddits-night": ['spaceporn', 'sunset'],
+    "subreddits-day": ['earthporn', 'skyporn']
 }
 
 ''' ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

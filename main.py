@@ -12,8 +12,8 @@ Settings
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ '''
 SETTINGS = {
     "searhLimit": 5,
-    "subreddits-night": ['spaceporn'], #sunset
-    "subreddits-day": ['earthporn'] #skyporn
+    "subreddits-night": ['spaceporn', 'sunset'],
+    "subreddits-day": ['earthporn', 'skyporn'] 
 }
 
 ''' ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -47,9 +47,9 @@ Image Filter
 def Filter(x, y, url):
     if not x > y:
         return False
-    if not x >= 1920:
+    if not x >= 2560:
         return False
-    if not y >= 1080:
+    if not y >= 1440:
         return False
     # if not url.includes('.png') or not url.includes('.jpg') or not url.includes('.jpeg'):
         # return False

@@ -12,8 +12,10 @@ Settings
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ '''
 SETTINGS = {
     "searhLimit": 5,
+    "blacklist": [''],
     "subreddits-night": ['spaceporn', 'sunset'],
-    "subreddits-day": ['earthporn', 'skyporn'] 
+    "subreddits-day": ['earthporn'],
+    "subreddits-time-based": False
 }
 
 ''' ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -24,8 +26,11 @@ now_time = now.time()
 city = LocationInfo("Dover", "England", "Europe/London", 51.154323, 1.290054)
 s = sun(city.observer, date=now)
 
-if now_time >= s["sunset"].time() or now_time <= s["sunrise"].time():
-    SETTINGS["subreddit"] = random.choice(SETTINGS["subreddits-night"])
+if (SETTINGS["subreddits-time-based"]): 
+    if now_time >= s["sunset"].time() or now_time <= s["sunrise"].time():
+        SETTINGS["subreddit"] = random.choice(SETTINGS["subreddits-night"])
+    else:
+        SETTINGS["subreddit"] = random.choice(SETTINGS["subreddits-day"])
 else:
     SETTINGS["subreddit"] = random.choice(SETTINGS["subreddits-day"])
 
@@ -53,6 +58,12 @@ def Filter(x, y, url):
         return False
     # if not url.includes('.png') or not url.includes('.jpg') or not url.includes('.jpeg'):
         # return False
+    # if url.includes('nhgt84fae0l61'):
+        # return False
+    for x in SETTINGS["blacklist"]:
+        if url.includes(x):
+            return False
+
     return True
 
 ''' ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -84,5 +95,3 @@ path = os.getcwd() + '\\' + name
 SPI_SETDESKWALLPAPER = 20
 
 ctypes.windll.user32.SystemParametersInfoW(SPI_SETDESKWALLPAPER, 0, path, 0)
-
-print(f"The chosen image is {j['data']['children'][current]['data']['title']} by the user u/{j['data']['children'][current]['data']['author']}.")

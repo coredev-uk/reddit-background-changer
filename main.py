@@ -12,10 +12,10 @@ Settings
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ '''
 SETTINGS = {
     "searhLimit": 5,
-    "blacklist": [''],
+    "blacklist": [],
     "subreddits-night": ['spaceporn', 'sunset'],
     "subreddits-day": ['earthporn'],
-    "subreddits-time-based": False
+    "subreddits-time-based": True
 }
 
 ''' ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -33,8 +33,6 @@ if (SETTINGS["subreddits-time-based"]):
         SETTINGS["subreddit"] = random.choice(SETTINGS["subreddits-day"])
 else:
     SETTINGS["subreddit"] = random.choice(SETTINGS["subreddits-day"])
-
-print(f'The chosen category is {SETTINGS["subreddit"]}.')
 
 ''' ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Main
@@ -56,14 +54,9 @@ def Filter(x, y, url):
         return False
     if not y >= 1440:
         return False
-    # if not url.includes('.png') or not url.includes('.jpg') or not url.includes('.jpeg'):
-        # return False
-    # if url.includes('nhgt84fae0l61'):
-        # return False
     for x in SETTINGS["blacklist"]:
         if url.includes(x):
             return False
-
     return True
 
 ''' ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -95,3 +88,4 @@ path = os.getcwd() + '\\' + name
 SPI_SETDESKWALLPAPER = 20
 
 ctypes.windll.user32.SystemParametersInfoW(SPI_SETDESKWALLPAPER, 0, path, 0)
+print(f"The chosen image from r/{SETTINGS['subreddit']} is '{j['data']['children'][current]['data']['title']}' by u/{j['data']['children'][current]['data']['author']}.")

@@ -13,7 +13,8 @@ SETTINGS = {
     "searhLimit": 5,
     "blacklist": [],
     "subreddit": 'earthporn',
-    "dark-background-at-night": True
+    "dark-background-at-night": True,
+    "dark-background": 'grey.png'
 }
 
 ''' ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -75,7 +76,7 @@ if (SETTINGS["dark-background-at-night"]):
     s = sun(city.observer, date=now)
 
     if now_time >= s["sunset"].time() or now_time <= s["sunrise"].time():
-        name = 'grey.png'
+        name = SETTINGS["dark-background"]
         print(f"The chosen image was '{name}'")
     else:
         print(f"The chosen image was '{name}' | Subreddit: r/{SETTINGS['subreddit']} | Title: '{j['data']['children'][current]['data']['title']}' | User: u/{j['data']['children'][current]['data']['author']}.")

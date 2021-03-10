@@ -1,4 +1,4 @@
-import json, urllib.request, os, ctypes, time, sys
+import json, urllib.request, os, ctypes, time
 from datetime import datetime
 from astral.sun import sun
 from astral import LocationInfo
@@ -10,14 +10,14 @@ SETTINGS = {
     "searhLimit": 5,
     "blacklist": [],
     "subreddit": 'earthporn',
-    "dark-background-at-night": False,
+    "dark-background-at-night": True,
     "dark-background": 'grey.png'
 }
 
 ''' ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Image Filter
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ '''
-def Filter(x, y, url):
+def ImageFilter(x, y, url):
     if not x > y:
         return False
     if not x >= 2560:
@@ -45,7 +45,7 @@ while not image:
     try:
         img = data['preview']['images'][0]['source']
         url = data['url_overridden_by_dest']
-        if Filter(img['width'], img['height'], url):
+        if ImageFilter(img['width'], img['height'], url):
             image = url
         else:
             current += 1
@@ -71,17 +71,19 @@ if (SETTINGS["dark-background-at-night"]):
 
     if now_time >= s["sunset"].time() or now_time <= s["sunrise"].time():
         name = SETTINGS["dark-background"]
-        print(f"The chosen image was '{name}'")
+        print(f"The chosen image was '{name}'.")
         path = os.getcwd() + '\\' + name
         ctypes.windll.user32.SystemParametersInfoW(SPI_SETDESKWALLPAPER, 0, path, 0)
     else:
         print(f"The chosen image was '{name}' | Subreddit: r/{SETTINGS['subreddit']} | Title: '{j['data']['children'][current]['data']['title']}' | User: u/{j['data']['children'][current]['data']['author']}.")
         path = os.getcwd() + '\\' + name
         ctypes.windll.user32.SystemParametersInfoW(SPI_SETDESKWALLPAPER, 0, path, 0)
+        time.sleep(2)
         os.remove(os.path.join(os.getcwd(), name))
 
 else:
     print(f"The chosen image was '{name}' | Subreddit: r/{SETTINGS['subreddit']} | Title: '{j['data']['children'][current]['data']['title']}' | User: u/{j['data']['children'][current]['data']['author']}.")
     path = os.getcwd() + '\\' + name
     ctypes.windll.user32.SystemParametersInfoW(SPI_SETDESKWALLPAPER, 0, path, 0)
+    time.sleep(2)
     os.remove(os.path.join(os.getcwd(), name))

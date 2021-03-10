@@ -1,4 +1,4 @@
-import json, urllib.request, os, ctypes, time
+import json, urllib.request, os, ctypes, time, random
 from datetime import datetime
 from astral.sun import sun
 from astral import LocationInfo
@@ -11,7 +11,7 @@ SETTINGS = {
     "blacklist": [],
     "subreddit": 'earthporn',
     "dark-background-at-night": True,
-    "dark-background": 'grey.png'
+    "dark-backgrounds": ['grey.png', 'red-blue.jpg']
 }
 
 ''' ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -70,7 +70,7 @@ if (SETTINGS["dark-background-at-night"]):
     s = sun(city.observer, date=now)
 
     if now_time >= s["sunset"].time() or now_time <= s["sunrise"].time():
-        name = SETTINGS["dark-background"]
+        name = random.choice(SETTINGS["dark-backgrounds"])
         print(f"The chosen image was '{name}'.")
         path = os.getcwd() + '\\' + name
         ctypes.windll.user32.SystemParametersInfoW(SPI_SETDESKWALLPAPER, 0, path, 0)
@@ -79,11 +79,10 @@ if (SETTINGS["dark-background-at-night"]):
         path = os.getcwd() + '\\' + name
         ctypes.windll.user32.SystemParametersInfoW(SPI_SETDESKWALLPAPER, 0, path, 0)
         time.sleep(2)
-        os.remove(os.path.join(os.getcwd(), name))
-
+        os.remove(path)
 else:
     print(f"The chosen image was '{name}' | Subreddit: r/{SETTINGS['subreddit']} | Title: '{j['data']['children'][current]['data']['title']}' | User: u/{j['data']['children'][current]['data']['author']}.")
     path = os.getcwd() + '\\' + name
     ctypes.windll.user32.SystemParametersInfoW(SPI_SETDESKWALLPAPER, 0, path, 0)
     time.sleep(2)
-    os.remove(os.path.join(os.getcwd(), name))
+    os.remove(path)

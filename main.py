@@ -1,7 +1,4 @@
-import json
-import urllib.request
-import os
-import ctypes
+import json, urllib.request, os, ctypes, time, sys
 from datetime import datetime
 from astral.sun import sun
 from astral import LocationInfo
@@ -13,7 +10,7 @@ SETTINGS = {
     "searhLimit": 5,
     "blacklist": [],
     "subreddit": 'earthporn',
-    "dark-background-at-night": True,
+    "dark-background-at-night": False,
     "dark-background": 'grey.png'
 }
 
@@ -58,10 +55,7 @@ while not image:
     if current >= SETTINGS["searhLimit"]:
         image = j['data']['children'][0]['data']['url_overridden_by_dest']
 
-if not os.path.exists('images'):
-    os.makedirs('images')
-
-name = 'images\\' + image.split('/')[-1]
+name = image.split('/')[-1]
 urllib.request.urlretrieve(image, name)
 
 ''' ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -78,12 +72,16 @@ if (SETTINGS["dark-background-at-night"]):
     if now_time >= s["sunset"].time() or now_time <= s["sunrise"].time():
         name = SETTINGS["dark-background"]
         print(f"The chosen image was '{name}'")
+        path = os.getcwd() + '\\' + name
+        ctypes.windll.user32.SystemParametersInfoW(SPI_SETDESKWALLPAPER, 0, path, 0)
     else:
         print(f"The chosen image was '{name}' | Subreddit: r/{SETTINGS['subreddit']} | Title: '{j['data']['children'][current]['data']['title']}' | User: u/{j['data']['children'][current]['data']['author']}.")
+        path = os.getcwd() + '\\' + name
+        ctypes.windll.user32.SystemParametersInfoW(SPI_SETDESKWALLPAPER, 0, path, 0)
+        os.remove(os.path.join(os.getcwd(), name))
 
-    path = os.getcwd() + '\\' + name
-    ctypes.windll.user32.SystemParametersInfoW(SPI_SETDESKWALLPAPER, 0, path, 0)
 else:
     print(f"The chosen image was '{name}' | Subreddit: r/{SETTINGS['subreddit']} | Title: '{j['data']['children'][current]['data']['title']}' | User: u/{j['data']['children'][current]['data']['author']}.")
     path = os.getcwd() + '\\' + name
     ctypes.windll.user32.SystemParametersInfoW(SPI_SETDESKWALLPAPER, 0, path, 0)
+    os.remove(os.path.join(os.getcwd(), name))

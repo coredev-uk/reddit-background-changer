@@ -56,33 +56,21 @@ while not image:
         image = j['data']['children'][0]['data']['url_overridden_by_dest']
 
 name = image.split('/')[-1]
-urllib.request.urlretrieve(image, name)
 
 ''' ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Check if its Night
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ '''
-SPI_SETDESKWALLPAPER = 20
+current_time = datetime.now().time()
+s = sun(LocationInfo("London", "England", "Europe/London", 51.5, -0.116).observer, date=datetime.now())
 
-if (SETTINGS["dark-background-at-night"]): 
-    now = datetime.now()
-    now_time = datetime.now().time()
-    city = LocationInfo("Dover", "England", "Europe/London", 51.154323, 1.290054)
-    s = sun(city.observer, date=now)
-
-    if now_time >= s["sunset"].time() or now_time <= s["sunrise"].time():
-        name = random.choice(SETTINGS["dark-backgrounds"])
-        print(f"The chosen image was '{name}'.")
-        path = os.getcwd() + '\\' + name
-        ctypes.windll.user32.SystemParametersInfoW(SPI_SETDESKWALLPAPER, 0, path, 0)
-    else:
-        print(f"The chosen image was '{name}' | Subreddit: r/{SETTINGS['subreddit']} | Title: '{j['data']['children'][current]['data']['title']}' | User: u/{j['data']['children'][current]['data']['author']}.")
-        path = os.getcwd() + '\\' + name
-        ctypes.windll.user32.SystemParametersInfoW(SPI_SETDESKWALLPAPER, 0, path, 0)
-        time.sleep(2)
-        os.remove(path)
+if (SETTINGS["dark-background-at-night"] and current_time >= s["sunset"].time() or current_time <= s["sunrise"].time()): 
+    print(f"The chosen image was '{name}'.")
+    path = os.getcwd() + '\\' + random.choice(SETTINGS["dark-backgrounds"])
+    ctypes.windll.user32.SystemParametersInfoW(20, 0, path, 0)
 else:
+    urllib.request.urlretrieve(image, name)
     print(f"The chosen image was '{name}' | Subreddit: r/{SETTINGS['subreddit']} | Title: '{j['data']['children'][current]['data']['title']}' | User: u/{j['data']['children'][current]['data']['author']}.")
     path = os.getcwd() + '\\' + name
-    ctypes.windll.user32.SystemParametersInfoW(SPI_SETDESKWALLPAPER, 0, path, 0)
+    ctypes.windll.user32.SystemParametersInfoW(20, 0, path, 0)
     time.sleep(2)
     os.remove(path)

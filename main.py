@@ -4,11 +4,9 @@ from datetime import datetime; from astral.sun import sun; from astral import Lo
 Settings
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ '''
 SETTINGS = {
-    "searchLimit": 5,
     "blacklist": [],
-    "subreddit": 'earthporn',
-    "dark-background-at-night": True,
-    "dark-backgrounds": ['grey.png', 'red-blue.jpg', 'grey-2.png']
+    "subreddits": ['earthporn'],
+    "dark-background-at-night": True
 }
 
 ''' ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -29,7 +27,9 @@ def ImageFilter(x, y, url):
 ''' ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Find the image
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ '''
-def FetchImage(subreddit, searchLimit):
+def FetchImage(subreddits):
+    searchLimit = 5
+    subreddit = random.choice(subreddits)
     req = urllib.request.Request(f'https://www.reddit.com/r/{subreddit}/top.json', headers = {'User-agent': 'Backgound Setter'})
     res = urllib.request.urlopen(req)
     j = json.load(res)

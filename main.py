@@ -1,17 +1,14 @@
 import json, urllib.request, os, ctypes, time, random
-from datetime import datetime
-from astral.sun import sun
-from astral import LocationInfo
-
+from datetime import datetime; from astral.sun import sun; from astral import LocationInfo
 ''' ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Settings
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ '''
 SETTINGS = {
-    "searhLimit": 5,
+    "searchLimit": 5,
     "blacklist": [],
     "subreddit": 'earthporn',
     "dark-background-at-night": True,
-    "dark-backgrounds": ['grey.png', 'red-blue.jpg']
+    "dark-backgrounds": ['grey.png', 'red-blue.jpg', 'grey-2.png']
 }
 
 ''' ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -32,30 +29,32 @@ def ImageFilter(x, y, url):
 ''' ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Find the image
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ '''
-req = urllib.request.Request(f'https://www.reddit.com/r/{SETTINGS["subreddit"]}/top.json', headers = {'User-agent': 'Backgound Setter'})
-res = urllib.request.urlopen(req)
-j = json.load(res)
-SETTINGS['searhLimit'] = len(j['data']['children'])
-current = 0
-image = None
+def FetchImage(subreddit, searchLimit):
+    req = urllib.request.Request(f'https://www.reddit.com/r/{subreddit}/top.json', headers = {'User-agent': 'Backgound Setter'})
+    res = urllib.request.urlopen(req)
+    j = json.load(res)
+    searchLimit = len(j['data']['children'])
+    current = 0
+    image = None
 
-while not image:
-    data = j['data']['children'][current]['data']
+    while not image:
+        data = j['data']['children'][current]['data']
 
-    try:
-        img = data['preview']['images'][0]['source']
-        url = data['url_overridden_by_dest']
-        if ImageFilter(img['width'], img['height'], url):
-            image = url
-        else:
+        try:
+            img = data['preview']['images'][0]['source']
+            url = data['url_overridden_by_dest']
+            if ImageFilter(img['width'], img['height'], url):
+                image = url
+            else:
+                current += 1
+        except:
             current += 1
-    except:
-        current += 1
 
-    if current >= SETTINGS["searhLimit"]:
-        image = j['data']['children'][0]['data']['url_overridden_by_dest']
+        if current >= searchLimit:
+            image = j['data']['children'][0]['data']['url_overridden_by_dest']
 
-name = image.split('/')[-1]
+    name = image.split('/')[-1]
+    return image, name, j, current
 
 ''' ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Check if its Night
@@ -63,11 +62,19 @@ Check if its Night
 current_time = datetime.now().time()
 s = sun(LocationInfo("London", "England", "Europe/London", 51.5, -0.116).observer, date=datetime.now())
 
-if (SETTINGS["dark-background-at-night"] and current_time >= s["sunset"].time() or current_time <= s["sunrise"].time()): 
+if (SETTINGS["dark-background-at-night"] and current_time >= s["sunset"].time() or current_time <= s["sunrise"].time()):
+    ''' ~~~~~~~~~~~~~~~~~~~~~~~~~
+    Sets the Night Background
+    ~~~~~~~~~~~~~~~~~~~~~~~~~ '''
+    name = random.choice(os.listdir(os.getcwd() + "\\Dark Backgrounds"))
     print(f"The chosen image was '{name}'.")
-    path = os.getcwd() + '\\' + random.choice(SETTINGS["dark-backgrounds"])
+    path = os.getcwd() + '\\Dark Backgrounds\\' + name
     ctypes.windll.user32.SystemParametersInfoW(20, 0, path, 0)
 else:
+    ''' ~~~~~~~~~~~~~~~~~~~~~~~~~
+    Sets the Day Background
+    ~~~~~~~~~~~~~~~~~~~~~~~~~ '''
+    image, name, j, current = FetchImage(SETTINGS["subreddit"], SETTINGS['searchLimit']) # Run the function to fetch the image
     urllib.request.urlretrieve(image, name)
     print(f"The chosen image was '{name}' | Subreddit: r/{SETTINGS['subreddit']} | Title: '{j['data']['children'][current]['data']['title']}' | User: u/{j['data']['children'][current]['data']['author']}.")
     path = os.getcwd() + '\\' + name

@@ -6,8 +6,12 @@ Settings
 SETTINGS = {
     "blacklist": [],
     "subreddits": ['earthporn'],
-    "dark-background-at-night": True
+    "night-backgrounds": True
 }
+
+if SETTINGS["night-backgrounds"] and not os.path.exists('night-backgrounds'):
+    os.makedirs('night-backgrounds')
+    input("Please populate the night-backgrounds directory with images you would like to use at night. Press ENTER to continue...")
 
 ''' ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Image Filter
@@ -62,13 +66,13 @@ Check if its Night
 current_time = datetime.now().time()
 s = sun(LocationInfo("London", "England", "Europe/London", 51.5, -0.116).observer, date=datetime.now())
 
-if (SETTINGS["dark-background-at-night"] and current_time >= s["sunset"].time() or current_time <= s["sunrise"].time()):
+if (SETTINGS["night-backgrounds"] and current_time >= s["sunset"].time() or current_time <= s["sunrise"].time()):
     ''' ~~~~~~~~~~~~~~~~~~~~~~~~~
     Sets the Night Background
     ~~~~~~~~~~~~~~~~~~~~~~~~~ '''
-    name = random.choice(os.listdir(os.getcwd() + "\\Dark Backgrounds"))
+    name = random.choice(os.listdir(os.getcwd() + "\\night-backgrounds"))
     print(f"The chosen image was '{name}'.")
-    path = os.getcwd() + '\\Dark Backgrounds\\' + name
+    path = os.getcwd() + '\\night-backgrounds\\' + name
     ctypes.windll.user32.SystemParametersInfoW(20, 0, path, 0)
 else:
     ''' ~~~~~~~~~~~~~~~~~~~~~~~~~

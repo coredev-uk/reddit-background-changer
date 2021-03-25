@@ -7,7 +7,9 @@ SETTINGS = {
     "blacklist": [],
     "subreddits": ['earthporn'],
     "night-backgrounds": True,
-    "city": 'London'
+    "city": 'London',
+    "resolution-x": 2560,
+    "resolution-y": 1440
 }
 
 ''' ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -16,9 +18,11 @@ Image Filter
 def ImageFilter(x, y, url):
     if x < y:
         return False
-    if x <= 2560:
+    if x <= SETTINGS["resolution-x"]:
         return False
-    if y <= 1440:
+    if y <= SETTINGS["resolution-y"]:
+        return False
+    if not url.includes("i.redd.it") or not url.includes("i.imgur.com"):
         return False
     for v in SETTINGS["blacklist"]:
         if url.includes(v):
@@ -80,21 +84,17 @@ Check if its Night
 
 a = Astral()
 a.solar_depression = 'civil'
-city = a[SETTINGS["city"]]
+city = a[SETTINGS['city']]
 s = city.sun(date=datetime.now(), local=True)
 
 if (SETTINGS["night-backgrounds"] and datetime.now().time() >= s["sunset"].time() or datetime.now().time() <= s["sunrise"].time()):
-    ''' ~~~~~~~~~~~~~~~~~~~~~~~~~
-    Sets the Night Background
-    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ '''
+    # night
     name = random.choice(os.listdir(os.getcwd() + "\\night-backgrounds"))
     print(f"The chosen image was '{name}'.")
     path = os.getcwd() + '\\night-backgrounds\\' + name
     ctypes.windll.user32.SystemParametersInfoW(20, 0, path, 0)
 else:
-    ''' ~~~~~~~~~~~~~~~~~~~~~~~~~
-    Sets the Day Background
-    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ '''
+    # day
     name, json = FetchImage(SETTINGS["subreddits"]) # Run the function to fetch the image
     print(f"The chosen image was '{name}' | Subreddit: r/{json['subreddit']} | Title: '{json['title']}' | User: u/{json['author']}.")
     path = os.getcwd() + '\\' + name

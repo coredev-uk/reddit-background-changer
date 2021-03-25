@@ -58,7 +58,11 @@ def FetchImage(subreddits):
             image = j['data']['children'][0]['data']['url_overridden_by_dest']
 
     name = image.split('/')[-1]
-    return image, name, j, current
+    j = j['data']['children'][current]['data']
+
+    urllib.request.urlretrieve(image, name)
+
+    return name, j
 
 ''' ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Check if its Night
@@ -78,9 +82,8 @@ else:
     ''' ~~~~~~~~~~~~~~~~~~~~~~~~~
     Sets the Day Background
     ~~~~~~~~~~~~~~~~~~~~~~~~~ '''
-    image, name, j, current = FetchImage(SETTINGS["subreddit"], SETTINGS['searchLimit']) # Run the function to fetch the image
-    urllib.request.urlretrieve(image, name)
-    print(f"The chosen image was '{name}' | Subreddit: r/{SETTINGS['subreddit']} | Title: '{j['data']['children'][current]['data']['title']}' | User: u/{j['data']['children'][current]['data']['author']}.")
+    name, json = FetchImage(SETTINGS["subreddits"], SETTINGS['searchLimit']) # Run the function to fetch the image
+    print(f"The chosen image was '{name}' | Subreddit: r/{json['subreddit']} | Title: '{json['title']}' | User: u/{json['author']}.")
     path = os.getcwd() + '\\' + name
     ctypes.windll.user32.SystemParametersInfoW(20, 0, path, 0)
     time.sleep(2)

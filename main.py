@@ -1,5 +1,4 @@
-import json, urllib.request, os, ctypes, time, random
-from datetime import datetime; from astral import Astral
+import json, urllib.request, os, ctypes, time, random;from datetime import datetime;from astral.sun import sun; from astral import LocationInfo;from win32api import GetSystemMetrics
 ''' ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Settings
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ '''
@@ -7,22 +6,18 @@ SETTINGS = {
     "blacklist": [],
     "subreddits": ['earthporn'],
     "night-backgrounds": True,
-    "city": 'London',
-    "resolution-x": 2560,
-    "resolution-y": 1440
+    "city": 'London'
 }
 
 ''' ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Image Filter
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ '''
 def ImageFilter(x, y, url):
-    if x < y:
+    if not x > y:
         return False
-    if x <= SETTINGS["resolution-x"]:
+    if not x >= GetSystemMetrics(0):
         return False
-    if y <= SETTINGS["resolution-y"]:
-        return False
-    if not url.includes("i.redd.it") or not url.includes("i.imgur.com"):
+    if not y >= GetSystemMetrics(1):
         return False
     for v in SETTINGS["blacklist"]:
         if url.includes(v):
@@ -64,12 +59,11 @@ def FetchImage(subreddits):
             image = j['data']['children'][0]['data']['url_overridden_by_dest']
 
     name = image.split('/')[-1]
-    j = j['data']['children'][current]['data']
 
     # Fetch the image
     urllib.request.urlretrieve(image, name)
 
-    return name, j
+    return name, j, current
 
 ''' ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Initial Setup
@@ -82,10 +76,8 @@ if (SETTINGS["night-backgrounds"] and not os.path.exists('night-backgrounds')):
 Check if its Night
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ '''
 
-a = Astral()
-a.solar_depression = 'civil'
-city = a[SETTINGS['city']]
-s = city.sun(date=datetime.now(), local=True)
+city = LocationInfo(SETTINGS["city"])
+s = sun(city.observer, date=datetime.now())
 
 if (SETTINGS["night-backgrounds"] and datetime.now().time() >= s["sunset"].time() or datetime.now().time() <= s["sunrise"].time()):
     # night
@@ -95,8 +87,8 @@ if (SETTINGS["night-backgrounds"] and datetime.now().time() >= s["sunset"].time(
     ctypes.windll.user32.SystemParametersInfoW(20, 0, path, 0)
 else:
     # day
-    name, json = FetchImage(SETTINGS["subreddits"]) # Run the function to fetch the image
-    print(f"The chosen image was '{name}' | Subreddit: r/{json['subreddit']} | Title: '{json['title']}' | User: u/{json['author']}.")
+    name, j, current = FetchImage(SETTINGS["subreddits"]) # Run the function to fetch the image
+    print(f"The chosen image was '{name}' | Subreddit: r/{j['data']['children'][current]['data']['subreddit']} | Title: '{j['data']['children'][current]['data']['title']}' | User: u/{j['data']['children'][current]['data']['author']}.")
     path = os.getcwd() + '\\' + name
     ctypes.windll.user32.SystemParametersInfoW(20, 0, path, 0)
 

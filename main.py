@@ -1,17 +1,14 @@
 import json, urllib.request, os, ctypes, time, random
-from datetime import datetime; from astral.sun import sun; from astral import LocationInfo
+from datetime import datetime; from astral import Astral
 ''' ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Settings
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ '''
 SETTINGS = {
     "blacklist": [],
     "subreddits": ['earthporn'],
-    "night-backgrounds": True
+    "night-backgrounds": True,
+    "city": 'London'
 }
-
-if SETTINGS["night-backgrounds"] and not os.path.exists('night-backgrounds'):
-    os.makedirs('night-backgrounds')
-    input("Please populate the night-backgrounds directory with images you would like to use at night. Press ENTER to continue...")
 
 ''' ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Image Filter
@@ -65,15 +62,25 @@ def FetchImage(subreddits):
     return name, j
 
 ''' ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Initial Setup
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ '''
+if (SETTINGS["night-backgrounds"] and not os.path.exists('night-backgrounds')):
+    os.makedirs('night-backgrounds')
+    input("Please populate the night-backgrounds directory with images you would like to use at night. Press ENTER to continue...")
+
+''' ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Check if its Night
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ '''
-current_time = datetime.now().time()
-s = sun(LocationInfo("London", "England", "Europe/London", 51.5, -0.116).observer, date=datetime.now())
 
-if (SETTINGS["night-backgrounds"] and current_time >= s["sunset"].time() or current_time <= s["sunrise"].time()):
+a = Astral()
+a.solar_depression = 'civil'
+city = a[SETTINGS["city"]]
+s = city.sun(date=datetime.now(), local=True)
+
+if (SETTINGS["night-backgrounds"] and datetime.now().time() >= s["sunset"].time() or datetime.now().time() <= s["sunrise"].time()):
     ''' ~~~~~~~~~~~~~~~~~~~~~~~~~
     Sets the Night Background
-    ~~~~~~~~~~~~~~~~~~~~~~~~~ '''
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ '''
     name = random.choice(os.listdir(os.getcwd() + "\\night-backgrounds"))
     print(f"The chosen image was '{name}'.")
     path = os.getcwd() + '\\night-backgrounds\\' + name
@@ -81,10 +88,12 @@ if (SETTINGS["night-backgrounds"] and current_time >= s["sunset"].time() or curr
 else:
     ''' ~~~~~~~~~~~~~~~~~~~~~~~~~
     Sets the Day Background
-    ~~~~~~~~~~~~~~~~~~~~~~~~~ '''
-    name, json = FetchImage(SETTINGS["subreddits"], SETTINGS['searchLimit']) # Run the function to fetch the image
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ '''
+    name, json = FetchImage(SETTINGS["subreddits"]) # Run the function to fetch the image
     print(f"The chosen image was '{name}' | Subreddit: r/{json['subreddit']} | Title: '{json['title']}' | User: u/{json['author']}.")
     path = os.getcwd() + '\\' + name
     ctypes.windll.user32.SystemParametersInfoW(20, 0, path, 0)
+
+    # Delete the File After the background has been set
     time.sleep(2)
     os.remove(path)

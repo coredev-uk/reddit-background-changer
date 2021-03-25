@@ -14,14 +14,14 @@ SETTINGS = {
 Image Filter
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ '''
 def ImageFilter(x, y, url):
-    if not x > y:
+    if x < y:
         return False
-    if not x >= 2560:
+    if x <= 2560:
         return False
-    if not y >= 1440:
+    if y <= 1440:
         return False
-    for x in SETTINGS["blacklist"]:
-        if url.includes(x):
+    for v in SETTINGS["blacklist"]:
+        if url.includes(v):
             return False
     return True
 
@@ -31,10 +31,15 @@ Find the image
 def FetchImage(subreddits):
     searchLimit = 5
     subreddit = random.choice(subreddits)
-    req = urllib.request.Request(f'https://www.reddit.com/r/{subreddit}/top.json', headers = {'User-agent': 'Backgound Setter'})
+
+    # Fetch the JSON
+    req = urllib.request.Request(f'https://www.reddit.com/r/{subreddit}/top.json', headers = {'User-agent': 'Reddit Background Setter (Created by u/Core_UK and u/Member87)'})
     res = urllib.request.urlopen(req)
     j = json.load(res)
+
+    # Assign the search limit by getting the length of the JSON
     searchLimit = len(j['data']['children'])
+
     current = 0
     image = None
 
@@ -57,6 +62,7 @@ def FetchImage(subreddits):
     name = image.split('/')[-1]
     j = j['data']['children'][current]['data']
 
+    # Fetch the image
     urllib.request.urlretrieve(image, name)
 
     return name, j

@@ -20,7 +20,7 @@ A simple python script that fetches an image from your desired subreddit and set
 SETTINGS = {
     "blacklist": ['7t0swm'], # Add the image id or if you use save-images you can use the file name of what you'd not like to see in the future
     "subreddits": ['EarthPorn', 'SkyPorn'], # Add your subreddit's here, its randomised each time its ran, so it'll be one from the list (it can just be one subreddit if you'd just like that)
-    "save-images": False # Allows you to store the backgrounds in an images folder instead of being deleted.
+    "save-images": False, # Allows you to store the backgrounds in an images folder instead of being deleted.
     "night-backgrounds": True, # Set background to an image found in the night-backgrounds folder. Only happens at night (Easier for your eyes)
     "city": 'London' # Put your local city here if you decide to use night-backgrounds
 }

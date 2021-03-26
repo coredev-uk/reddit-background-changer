@@ -21,7 +21,7 @@ def ImageFilter(x, y, data):
     if not y >= GetSystemMetrics(1):
         return False
     for v in SETTINGS["blacklist"]:
-        if v in data['title'] or v in data['id']:
+        if v in data['id']:
             return False
     return True
 

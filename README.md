@@ -17,7 +17,7 @@ A simple python script that fetches an image from your desired subreddit and set
 *Edit this at the top of [main.py](https://github.com/CoreDevelopment-UK/reddit-background-changer/blob/main/main.py#L6).*
 ```python
 SETTINGS = {
-    "blacklist": ['imageid'], # Add the image id of what you'd not like to see in the future
+    "blacklist": ['7t0swm'], # Add the image id of what you'd not like to see in the future
     "subreddits": ['cool-subreddit1', 'cool-subreddit2'], # Add your subreddit's here, its randomised each time its ran, so it'll be one from the list (it can just be one subreddit if you'd just like that)
     "night-backgrounds": True, # Set background to an image found in the night-backgrounds folder. Only happens at night (Easier for your eyes)
     "city": 'London' # Put your local city here if you decide to use night-backgrounds

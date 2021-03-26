@@ -1,4 +1,4 @@
-import json, urllib.request, os, ctypes, time, random, webbrowser;from datetime import datetime;from astral.sun import sun; from astral import LocationInfo;from win32api import GetSystemMetrics;from win10toast_click import ToastNotifier 
+import json, urllib.request, os, ctypes, time, random, webbrowser, shutil;from datetime import datetime;from astral.sun import sun; from astral import LocationInfo;from win32api import GetSystemMetrics;from win10toast_click import ToastNotifier 
 
 ''' ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Settings
@@ -6,7 +6,8 @@ Settings
 SETTINGS = {
     "blacklist": [],
     "subreddits": ['earthporn'],
-    "night-backgrounds": True,
+    "save-images": False,
+    "night-backgrounds": False,
     "city": 'London'
 }
 
@@ -21,7 +22,7 @@ def ImageFilter(x, y, data):
     if not y >= GetSystemMetrics(1):
         return False
     for v in SETTINGS["blacklist"]:
-        if v in data['id']:
+        if v in data['id'] or v in data['url_overridden_by_dest']:
             return False
     return True
 
@@ -61,6 +62,9 @@ def FetchImage(subreddits):
 
     name = image.split('/')[-1]
 
+    if SETTINGS["save-images"]:
+        name = 'images\\' + name
+
     # Fetch the image
     urllib.request.urlretrieve(image, name)
 
@@ -72,6 +76,12 @@ Initial Setup
 if (SETTINGS["night-backgrounds"] and not os.path.exists('night-backgrounds')):
     os.makedirs('night-backgrounds')
     input("Please populate the night-backgrounds directory with images you would like to use at night. Press ENTER to continue...")
+if SETTINGS["save-images"]:
+    if not os.path.exists('images'):
+        os.makedirs('images')
+else:
+    if os.path.exists('images'):
+        shutil.rmtree('images')
 
 ''' ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Check if its Night
@@ -89,13 +99,14 @@ if (SETTINGS["night-backgrounds"] and datetime.now().time() >= s["sunset"].time(
 else:
     # day
     name, data = FetchImage(SETTINGS["subreddits"]) # Run the function to fetch the image
-    print(f"The chosen image was '{name}' | Subreddit: r/{data['subreddit']} | Title: '{data['title']}' | User: u/{data['author']}.")
+    print(f"The chosen image was '{data['title']}' by u/{data['author']} from r/{data['subreddit']}")
     path = os.getcwd() + '\\' + name
     ctypes.windll.user32.SystemParametersInfoW(20, 0, path, 0)
 
     # Delete the File After the background has been set
-    time.sleep(2)
-    os.remove(path)
+    if not SETTINGS["save-images"]:
+        time.sleep(2)
+        os.remove(path)
 
     # Click Callback Function
     def clickCallback():

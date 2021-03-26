@@ -17,6 +17,7 @@ A simple python script that fetches an image from your desired subreddit and set
 [Member87](https://github.com/member87)
 
 ## Configuration
+*Edit this at the top of [main.py](https://github.com/CoreDevelopment-UK/reddit-background-changer/blob/main/main.py#L6)*
 ```python
 SETTINGS = {
     "blacklist": [], # Add the image id of what you'd not like to see in the future

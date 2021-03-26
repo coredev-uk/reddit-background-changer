@@ -6,7 +6,7 @@ A simple python script that fetches an image from your desired subreddit and set
 - Custom background to use at night
 - Notification when you get a new background
 - Blacklist images you dont like
-- Get images tailored to your display size
+- Get images tailored to your resolution
 
 ## Required Modules
 - [Astral](https://pypi.org/project/astral/)

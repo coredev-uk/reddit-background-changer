@@ -6,7 +6,7 @@ Settings
 SETTINGS = {
     "blacklist": [],
     "subreddits": ['earthporn'],
-    "night-backgrounds": False,
+    "night-backgrounds": True,
     "city": 'London'
 }
 

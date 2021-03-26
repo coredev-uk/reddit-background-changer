@@ -23,7 +23,9 @@ SETTINGS = {
     "city": 'London' # Put your local city here if you decide to use night-backgrounds
 }
 ```
-Just a small note about the blacklist, to get the image id you just look at the link of the post. ![alt text](https://i.imgur.com/E2AQYv0.png "Reddit Image ID") 
+Just a small note about the blacklist, to get the image id you just look at the link of the post.
+![Reddit Image ID](https://i.imgur.com/E2AQYv0.png "Reddit Image ID")
+You can open the page of your background by clicking on the notification of when your wallpaper changes, or you can find it on your chosen subreddit.
 
 ## Required Modules
 - [Astral](https://pypi.org/project/astral/)

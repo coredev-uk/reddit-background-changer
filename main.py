@@ -6,14 +6,14 @@ Settings
 SETTINGS = {
     "blacklist": [],
     "subreddits": ['earthporn'],
-    "night-backgrounds": True,
+    "night-backgrounds": False,
     "city": 'London'
 }
 
 ''' ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Image Filter
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ '''
-def ImageFilter(x, y, url):
+def ImageFilter(x, y, data):
     if not x > y:
         return False
     if not x >= GetSystemMetrics(0):
@@ -21,7 +21,7 @@ def ImageFilter(x, y, url):
     if not y >= GetSystemMetrics(1):
         return False
     for v in SETTINGS["blacklist"]:
-        if url.includes(v):
+        if v in data['url_overridden_by_dest'] or v in data['title']:
             return False
     return True
 
@@ -49,7 +49,7 @@ def FetchImage(subreddits):
         try:
             img = data['preview']['images'][0]['source']
             url = data['url_overridden_by_dest']
-            if ImageFilter(img['width'], img['height'], url):
+            if ImageFilter(img['width'], img['height'], data):
                 image = url
             else:
                 current += 1
@@ -64,7 +64,7 @@ def FetchImage(subreddits):
     # Fetch the image
     urllib.request.urlretrieve(image, name)
 
-    return name, j, current
+    return name, data
 
 ''' ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Initial Setup
@@ -88,31 +88,26 @@ if (SETTINGS["night-backgrounds"] and datetime.now().time() >= s["sunset"].time(
     ctypes.windll.user32.SystemParametersInfoW(20, 0, path, 0)
 else:
     # day
-    name, j, current = FetchImage(SETTINGS["subreddits"]) # Run the function to fetch the image
-    print(f"The chosen image was '{name}' | Subreddit: r/{j['data']['children'][current]['data']['subreddit']} | Title: '{j['data']['children'][current]['data']['title']}' | User: u/{j['data']['children'][current]['data']['author']}.")
+    name, data = FetchImage(SETTINGS["subreddits"]) # Run the function to fetch the image
+    print(f"The chosen image was '{name}' | Subreddit: r/{data['subreddit']} | Title: '{data['title']}' | User: u/{data['author']}.")
     path = os.getcwd() + '\\' + name
     ctypes.windll.user32.SystemParametersInfoW(20, 0, path, 0)
-
-    def clickCallback():
-        try: 
-            webbrowser.open_new(f"https://reddit.com{j['data']['children'][current]['data']['permalink']}")
-        except: 
-            print('Win10Toast Link Open Error')
-
-    # win10toast
-    try:
-        toaster = ToastNotifier()
-        toaster.show_toast(
-            f"New Background from {j['data']['children'][current]['data']['subreddit']}", # title
-            f"{j['data']['children'][current]['data']['title']}", # message 
-            icon_path="reddit.ico", # 'icon_path' 
-            duration=None, # for how many seconds toast should be visible; None = leave notification in Notification Center
-            threaded=True, # True = run other code in parallel; False = code execution will wait till notification disappears 
-            callback_on_click=clickCallback # click notification to run function 
-        )
-    except:
-        print("Win10Toast Creation Error")
 
     # Delete the File After the background has been set
     time.sleep(2)
     os.remove(path)
+
+    # Click Callback Function
+    def clickCallback():
+        webbrowser.open_new(f"https://reddit.com{data['permalink']}")
+
+    # win10toast
+    toaster = ToastNotifier()
+    toaster.show_toast(
+        f"New Background from {data['subreddit']}", # title
+        f"{data['title']}", # message 
+        icon_path="reddit.ico", # 'icon_path' 
+        duration=None, # for how many seconds toast should be visible; None = leave notification in Notification Center
+        threaded=True, # True = run other code in parallel; False = code execution will wait till notification disappears 
+        callback_on_click=clickCallback # click notification to run function 
+    )

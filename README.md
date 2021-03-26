@@ -2,9 +2,9 @@
 A simple python script that fetches an image from your desired subreddit and sets it to your background.
 
 ## Task Scheduler Setup
-1. Open Task Scheduler and click `New Task`.
+1. Open Task Scheduler and click **New Task**.
 2. Fill out the name and description with whatever you'd like and leave all other settings default.
-3. On Triggers set it to **One Time** and set **Repeat Every** to however long you'd like between wallpaper refreshes, then add `At Logon` for any user as well.
+3. On Triggers set it to **One Time** and set **Repeat Every** to however long you'd like between wallpaper refreshes, then add **At Logon** for any user as well.
 4. On Actions, set program/script to your `pythonw.exe` path with "" around it. Set Start In to directory of python file and argument to `main.py`.
 5. In the Settings tab tick **Allow task to be run on demand**, **Run task as soon as possible after a scheduled start is missed** and **If the running task does not end when requested, force it to stop** then set **Stop the task if it runs longer than:** to 1 hour.
 
@@ -30,4 +30,4 @@ SETTINGS = {
 - [Win10Toast-Click](https://pypi.org/project/win10toast-click/)
 
 ## Credits
-[Member87](https://github.com/member87)
+[Member87](https://github.com/member87) - Made the base script and helped out with additions I made

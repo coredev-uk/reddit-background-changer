@@ -1,10 +1,10 @@
-import json, urllib.request, os, ctypes, time, random, webbrowser, shutil, functools, config;from datetime import datetime;from astral.sun import sun; from astral import LocationInfo;from win32api import GetSystemMetrics;from win10toast_click import ToastNotifier 
-
+import json, urllib.request, os, ctypes, time, random, webbrowser, functools, config;from datetime import datetime;from astral.sun import sun; from astral import LocationInfo;from win32api import GetSystemMetrics;from win10toast_click import ToastNotifier 
 SETTINGS = config.SETTINGS
 SETTINGS['subreddit'] = random.choice(SETTINGS['subreddits'])
-''' ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Fetch the JSON - Checks if its cached
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ '''
+
+''' ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Functions
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ '''
 @functools.lru_cache(maxsize=len(SETTINGS['subreddits']))
 def jsonFetch(subreddit):
     req = urllib.request.Request(f'https://www.reddit.com/r/{subreddit}/top.json', headers = {'User-agent': 'Reddit Background Setter (Created by u/Core_UK and u/Member87)'})
@@ -12,9 +12,6 @@ def jsonFetch(subreddit):
     j = json.load(res)
     return j
 
-''' ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Image Filter
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ '''
 def ImageFilter(x, y, data):
     if not x > y:
         return False
@@ -27,25 +24,19 @@ def ImageFilter(x, y, data):
             return False
     return True
 
-''' ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Fetch Image Functions - Day
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ '''
 def FetchImage(night, j):
-    ''' ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    Reddit Fetch
-    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ '''
+    link = None
+
     if not night:
         searchLimit = len(j['data']['children'])
         current = 0
-        image = None
-
-        while not image:
+        while not link:
             data = j['data']['children'][current]['data']
             try:
                 img = data['preview']['images'][0]['source']
                 url = data['url_overridden_by_dest']
                 if ImageFilter(img['width'], img['height'], data):
-                    image = url
+                    link = url
                 else:
                     current += 1
             except:
@@ -54,9 +45,6 @@ def FetchImage(night, j):
             if current >= searchLimit:
                 link = j['data']['children'][0]['data']['url_overridden_by_dest']
     else:
-        ''' ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-        Night Background Fetch
-        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ '''
         link = random.choice(SETTINGS["night-backgrounds"])
 
     name = link.split('/')[-1]
@@ -64,51 +52,38 @@ def FetchImage(night, j):
         name = 'images\\' + name
 
     path = os.getcwd() + '\\' + name
-    urllib.request.urlretrieve(link, name) # Fetch the image
+    urllib.request.urlretrieve(link, name)
 
     print(name, link)
 
-    if night: return path
+    if night: return path, link
     return path, data
 
-''' ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+''' ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Main
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ '''
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ '''
 if SETTINGS["save-images"]:
     if not os.path.exists('images'):
         os.makedirs('images')
-else:
-    if os.path.exists('images'):
-        shutil.rmtree('images')
 
-city = LocationInfo(SETTINGS["city"])
-s = sun(city.observer, date=datetime.now())
+city = LocationInfo(SETTINGS["city"]);s = sun(city.observer, date=datetime.now())
+path, data = None, None
 
-if (SETTINGS["night-backgrounds-toggle"] and datetime.now().time() >= s["sunset"].time() or datetime.now().time() <= s["sunrise"].time()): # night
-    path = FetchImage(True, None)
+if (SETTINGS["night-backgrounds"] and datetime.now().time() >= s["sunset"].time() or datetime.now().time() <= s["sunrise"].time()): # night
+    path, link = FetchImage(True, None); link_extension = (path.split('\\')[-1]).split(".", 1)[0]
     ctypes.windll.user32.SystemParametersInfoW(20, 0, path, 0)
-    if not SETTINGS["save-images"]:
-        time.sleep(2)
-        os.remove(path)
-else: # day
+else:
     cached_hits = jsonFetch.cache_info().hits
     j = jsonFetch(SETTINGS['subreddit'])
-    # if jsonFetch.cache_info().hits > cached_hits:
-    path, data = FetchImage(False, j)
-    ctypes.windll.user32.SystemParametersInfoW(20, 0, path, 0)
+    if jsonFetch.cache_info().hits > cached_hits:
+        path, data = FetchImage(False, j)
+        ctypes.windll.user32.SystemParametersInfoW(20, 0, path, 0)
 
-    toaster = ToastNotifier() # win10toast
+if not SETTINGS["save-images"] and path:
+    time.sleep(2)
+    os.remove(path)
+if data:
+    toaster = ToastNotifier()
     def toasterCallback():
         webbrowser.open_new(f"https://reddit.com{data['permalink']}")
-    toaster.show_toast(
-        f"New Background from {data['subreddit']}", # title
-        f"{data['title']}", # message 
-        icon_path="reddit.ico", # 'icon_path' 
-        duration=None, # for how many seconds toast should be visible; None = leave notification in Notification Center
-        threaded=True, # True = run other code in parallel; False = code execution will wait till notification disappears 
-        callback_on_click=toasterCallback # click notification to run function 
-    )
-
-    if not SETTINGS["save-images"]: # Delete the File After the background has been set
-        time.sleep(2)
-        os.remove(path)
+    toaster.show_toast(f"New Background from {data['subreddit']}", f"{data['title']}", icon_path="reddit.ico", duration=None, threaded=True, callback_on_click=toasterCallback)

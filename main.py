@@ -1,4 +1,4 @@
-import json, urllib.request, os, ctypes, time, random, webbrowser, shutil;from datetime import datetime;from astral.sun import sun; from astral import LocationInfo;from win32api import GetSystemMetrics;from win10toast_click import ToastNotifier 
+import json, urllib.request, os, ctypes, time, random, webbrowser, shutil, functools;from datetime import datetime;from astral.sun import sun; from astral import LocationInfo;from win32api import GetSystemMetrics;from win10toast_click import ToastNotifier 
 
 ''' ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Settings
@@ -10,7 +10,7 @@ SETTINGS = {
     "night-backgrounds": True,
     "city": 'London'
 }
-
+SETTINGS['subreddit'] = random.choice(SETTINGS['subreddits'])
 ''' ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Image Filter
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ '''
@@ -27,16 +27,20 @@ def ImageFilter(x, y, data):
     return True
 
 ''' ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Find the image
+Fetch the JSON - Checks if its cached
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ '''
-def FetchImage(subreddits):
-    searchLimit = 5
-    subreddit = random.choice(subreddits)
-
-    # Fetch the JSON
+@functools.lru_cache(maxsize=len(SETTINGS['subreddits']))
+def jsonFetch(subreddit):
     req = urllib.request.Request(f'https://www.reddit.com/r/{subreddit}/top.json', headers = {'User-agent': 'Reddit Background Setter (Created by u/Core_UK and u/Member87)'})
     res = urllib.request.urlopen(req)
     j = json.load(res)
+    return j
+
+''' ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Find the image
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ '''
+def FetchImage(j):
+    searchLimit = 5
 
     # Assign the search limit by getting the length of the JSON
     searchLimit = len(j['data']['children'])
@@ -98,27 +102,33 @@ if (SETTINGS["night-backgrounds"] and datetime.now().time() >= s["sunset"].time(
     ctypes.windll.user32.SystemParametersInfoW(20, 0, path, 0)
 else:
     # day
-    name, data = FetchImage(SETTINGS["subreddits"]) # Run the function to fetch the image
-    print(f"The chosen image was '{data['title']}' by u/{data['author']} from r/{data['subreddit']}")
-    path = os.getcwd() + '\\' + name
-    ctypes.windll.user32.SystemParametersInfoW(20, 0, path, 0)
+    cached_hits = jsonFetch.cache_info().hits
+    j = jsonFetch(SETTINGS['subreddit'])
 
-    # Delete the File After the background has been set
-    if not SETTINGS["save-images"]:
-        time.sleep(2)
-        os.remove(path)
+    if not jsonFetch.cache_info().hits > cached_hits:
+        print("No Changed Made to Cache - Code Execution End")
+    else:
+        name, data = FetchImage(j) # Run the function to fetch the image
+        print(f"The chosen image was '{data['title']}' by u/{data['author']} from r/{data['subreddit']}")
+        path = os.getcwd() + '\\' + name
+        ctypes.windll.user32.SystemParametersInfoW(20, 0, path, 0)
 
-    # Click Callback Function
-    def clickCallback():
-        webbrowser.open_new(f"https://reddit.com{data['permalink']}")
+        # Delete the File After the background has been set
+        if not SETTINGS["save-images"]:
+            time.sleep(2)
+            os.remove(path)
 
-    # win10toast
-    toaster = ToastNotifier()
-    toaster.show_toast(
-        f"New Background from {data['subreddit']}", # title
-        f"{data['title']}", # message 
-        icon_path="reddit.ico", # 'icon_path' 
-        duration=None, # for how many seconds toast should be visible; None = leave notification in Notification Center
-        threaded=True, # True = run other code in parallel; False = code execution will wait till notification disappears 
-        callback_on_click=clickCallback # click notification to run function 
-    )
+        # Click Callback Function
+        def clickCallback():
+            webbrowser.open_new(f"https://reddit.com{data['permalink']}")
+
+        # win10toast
+        toaster = ToastNotifier()
+        toaster.show_toast(
+            f"New Background from {data['subreddit']}", # title
+            f"{data['title']}", # message 
+            icon_path="reddit.ico", # 'icon_path' 
+            duration=None, # for how many seconds toast should be visible; None = leave notification in Notification Center
+            threaded=True, # True = run other code in parallel; False = code execution will wait till notification disappears 
+            callback_on_click=clickCallback # click notification to run function 
+        )

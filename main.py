@@ -7,7 +7,7 @@ SETTINGS = {
     "blacklist": [],
     "subreddits": ['earthporn'],
     "save-images": False,
-    "night-backgrounds": False,
+    "night-backgrounds": True,
     "city": 'London'
 }
 

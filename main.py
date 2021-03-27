@@ -1,16 +1,17 @@
-import json, urllib.request, os, ctypes, time, random, webbrowser, shutil, functools;from datetime import datetime;from astral.sun import sun; from astral import LocationInfo;from win32api import GetSystemMetrics;from win10toast_click import ToastNotifier 
+import json, urllib.request, os, ctypes, time, random, webbrowser, shutil, functools, config;from datetime import datetime;from astral.sun import sun; from astral import LocationInfo;from win32api import GetSystemMetrics;from win10toast_click import ToastNotifier 
 
-''' ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Settings
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ '''
-SETTINGS = {
-    "blacklist": [],
-    "subreddits": ['earthporn'],
-    "save-images": False,
-    "night-backgrounds": True,
-    "city": 'London'
-}
+SETTINGS = config.SETTINGS
 SETTINGS['subreddit'] = random.choice(SETTINGS['subreddits'])
+''' ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Fetch the JSON - Checks if its cached
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ '''
+@functools.lru_cache(maxsize=len(SETTINGS['subreddits']))
+def jsonFetch(subreddit):
+    req = urllib.request.Request(f'https://www.reddit.com/r/{subreddit}/top.json', headers = {'User-agent': 'Reddit Background Setter (Created by u/Core_UK and u/Member87)'})
+    res = urllib.request.urlopen(req)
+    j = json.load(res)
+    return j
+
 ''' ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Image Filter
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ '''
@@ -27,59 +28,52 @@ def ImageFilter(x, y, data):
     return True
 
 ''' ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Fetch the JSON - Checks if its cached
+Fetch Image Functions - Day
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ '''
-@functools.lru_cache(maxsize=len(SETTINGS['subreddits']))
-def jsonFetch(subreddit):
-    req = urllib.request.Request(f'https://www.reddit.com/r/{subreddit}/top.json', headers = {'User-agent': 'Reddit Background Setter (Created by u/Core_UK and u/Member87)'})
-    res = urllib.request.urlopen(req)
-    j = json.load(res)
-    return j
+def FetchImage(night, j):
+    ''' ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    Reddit Fetch
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ '''
+    if not night:
+        searchLimit = len(j['data']['children'])
+        current = 0
+        image = None
 
-''' ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Find the image
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ '''
-def FetchImage(j):
-    searchLimit = 5
-
-    # Assign the search limit by getting the length of the JSON
-    searchLimit = len(j['data']['children'])
-
-    current = 0
-    image = None
-
-    while not image:
-        data = j['data']['children'][current]['data']
-
-        try:
-            img = data['preview']['images'][0]['source']
-            url = data['url_overridden_by_dest']
-            if ImageFilter(img['width'], img['height'], data):
-                image = url
-            else:
+        while not image:
+            data = j['data']['children'][current]['data']
+            try:
+                img = data['preview']['images'][0]['source']
+                url = data['url_overridden_by_dest']
+                if ImageFilter(img['width'], img['height'], data):
+                    image = url
+                else:
+                    current += 1
+            except:
                 current += 1
-        except:
-            current += 1
 
-        if current >= searchLimit:
-            image = j['data']['children'][0]['data']['url_overridden_by_dest']
+            if current >= searchLimit:
+                link = j['data']['children'][0]['data']['url_overridden_by_dest']
+    else:
+        ''' ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        Night Background Fetch
+        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ '''
+        link = random.choice(SETTINGS["night-backgrounds"])
 
-    name = image.split('/')[-1]
-
+    name = link.split('/')[-1]
     if SETTINGS["save-images"]:
         name = 'images\\' + name
 
-    # Fetch the image
-    urllib.request.urlretrieve(image, name)
+    path = os.getcwd() + '\\' + name
+    urllib.request.urlretrieve(link, name) # Fetch the image
 
-    return name, data
+    print(name, link)
+
+    if night: return path
+    return path, data
 
 ''' ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Initial Setup
+Main
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ '''
-if (SETTINGS["night-backgrounds"] and not os.path.exists('night-backgrounds')):
-    os.makedirs('night-backgrounds')
-    input("Please populate the night-backgrounds directory with images you would like to use at night. Press ENTER to continue...")
 if SETTINGS["save-images"]:
     if not os.path.exists('images'):
         os.makedirs('images')
@@ -87,48 +81,34 @@ else:
     if os.path.exists('images'):
         shutil.rmtree('images')
 
-''' ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Check if its Night
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ '''
-
 city = LocationInfo(SETTINGS["city"])
 s = sun(city.observer, date=datetime.now())
 
-if (SETTINGS["night-backgrounds"] and datetime.now().time() >= s["sunset"].time() or datetime.now().time() <= s["sunrise"].time()):
-    # night
-    name = random.choice(os.listdir(os.getcwd() + "\\night-backgrounds"))
-    print(f"The chosen image was '{name}'.")
-    path = os.getcwd() + '\\night-backgrounds\\' + name
+if (SETTINGS["night-backgrounds-toggle"] and datetime.now().time() >= s["sunset"].time() or datetime.now().time() <= s["sunrise"].time()): # night
+    path = FetchImage(True, None)
     ctypes.windll.user32.SystemParametersInfoW(20, 0, path, 0)
-else:
-    # day
+    if not SETTINGS["save-images"]:
+        time.sleep(2)
+        os.remove(path)
+else: # day
     cached_hits = jsonFetch.cache_info().hits
     j = jsonFetch(SETTINGS['subreddit'])
+    # if jsonFetch.cache_info().hits > cached_hits:
+    path, data = FetchImage(False, j)
+    ctypes.windll.user32.SystemParametersInfoW(20, 0, path, 0)
 
-    if not jsonFetch.cache_info().hits > cached_hits:
-        print("No Changed Made to Cache - Code Execution End")
-    else:
-        name, data = FetchImage(j) # Run the function to fetch the image
-        print(f"The chosen image was '{data['title']}' by u/{data['author']} from r/{data['subreddit']}")
-        path = os.getcwd() + '\\' + name
-        ctypes.windll.user32.SystemParametersInfoW(20, 0, path, 0)
+    toaster = ToastNotifier() # win10toast
+    def toasterCallback():
+        webbrowser.open_new(f"https://reddit.com{data['permalink']}")
+    toaster.show_toast(
+        f"New Background from {data['subreddit']}", # title
+        f"{data['title']}", # message 
+        icon_path="reddit.ico", # 'icon_path' 
+        duration=None, # for how many seconds toast should be visible; None = leave notification in Notification Center
+        threaded=True, # True = run other code in parallel; False = code execution will wait till notification disappears 
+        callback_on_click=toasterCallback # click notification to run function 
+    )
 
-        # Delete the File After the background has been set
-        if not SETTINGS["save-images"]:
-            time.sleep(2)
-            os.remove(path)
-
-        # Click Callback Function
-        def clickCallback():
-            webbrowser.open_new(f"https://reddit.com{data['permalink']}")
-
-        # win10toast
-        toaster = ToastNotifier()
-        toaster.show_toast(
-            f"New Background from {data['subreddit']}", # title
-            f"{data['title']}", # message 
-            icon_path="reddit.ico", # 'icon_path' 
-            duration=None, # for how many seconds toast should be visible; None = leave notification in Notification Center
-            threaded=True, # True = run other code in parallel; False = code execution will wait till notification disappears 
-            callback_on_click=clickCallback # click notification to run function 
-        )
+    if not SETTINGS["save-images"]: # Delete the File After the background has been set
+        time.sleep(2)
+        os.remove(path)

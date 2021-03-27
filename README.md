@@ -23,7 +23,7 @@ SETTINGS = {
     "subreddits": ['EarthPorn', 'SkyPorn'], # Add your subreddit's here, its randomised each time its ran, so it'll be one from the list (it can just be one subreddit if you'd just like that)
     "save-images": False, # Allows you to store the backgrounds in an images folder instead of being deleted.
     "night-backgrounds": ['https://alinktosomecoolimage.png'], # Set background to an you found on the internet, leave it empy if you dont want a different background at night. Only happens at night (Easier for your eyes)
-    "city": 'London' # Put your local city here if you decide to use night-backgrounds
+    "city": 'London' # Put your local city here if you decide to use night-backgrounds, just leave it default if you dont want to use the night-backgrounds
 }
 ```
 

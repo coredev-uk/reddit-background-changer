@@ -16,7 +16,7 @@ A simple python script that fetches an image from your desired subreddit and set
 - [Win10Toast-Click](https://pypi.org/project/win10toast-click/)
 
 ## Configuration
-*Edit this at the top of [main.py](https://github.com/coredev-uk/reddit-background-changer/blob/main/config.py).*
+*Edit this in [config.py](https://github.com/coredev-uk/reddit-background-changer/blob/main/config.py).*
 ```python
 SETTINGS = {
     "blacklist": ['7t0swm'], # Add the image id or if you use save-images you can use the file name of what you'd not like to see in the future

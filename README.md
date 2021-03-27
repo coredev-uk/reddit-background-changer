@@ -8,6 +8,7 @@ A simple python script that fetches an image from your desired subreddit and set
 - Blacklist images you dont like
 - Get images tailored to your resolution
 - Optional efficient on storage as images are removed after background being set
+- Caches the JSON so you dont get notified if your background is the same
 
 ## Required Modules
 - [Astral](https://pypi.org/project/astral/)

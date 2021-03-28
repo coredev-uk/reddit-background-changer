@@ -1,6 +1,5 @@
 # Reddit Background Changer
 A simple python script that fetches an image from your desired subreddit and sets it to your background.
-# Experimental Branch - USE WITH CAUTION
 
 ## Features
 - Pick your favourite subreddits
@@ -9,6 +8,7 @@ A simple python script that fetches an image from your desired subreddit and set
 - Blacklist images you dont like
 - Get images tailored to your resolution
 - Optional efficient on storage as images are removed after background being set
+- Caches the JSON so you dont get notified if your background is the same
 
 ## Required Modules
 - [Astral](https://pypi.org/project/astral/)
@@ -16,7 +16,7 @@ A simple python script that fetches an image from your desired subreddit and set
 - [Win10Toast-Click](https://pypi.org/project/win10toast-click/)
 
 ## Configuration
-*Edit this at the top of [main.py](https://github.com/CoreDevelopment-UK/reddit-background-changer/blob/main/main.py#L6).*
+*Edit this in [config.py](https://github.com/coredev-uk/reddit-background-changer/blob/main/config.py).*
 ```python
 SETTINGS = {
     "blacklist": ['7t0swm'], # Add the image id or if you use save-images you can use the file name of what you'd not like to see in the future
@@ -24,7 +24,7 @@ SETTINGS = {
     "save-images": False, # Allows you to store the backgrounds in an images folder instead of being deleted.
     "use-cache": False, # Enabling this would make you use the cache, only experimental and doesnt work if you use night backgrounds
     "night-backgrounds": ['https://alinktosomecoolimage.png'], # Set background to an you found on the internet, leave it empy if you dont want a different background at night. Only happens at night (Easier for your eyes)
-    "city": 'London' # Put your local city here if you decide to use night-backgrounds
+    "city": 'London' # Put your local city here if you decide to use night-backgrounds, just leave it default if you dont want to use the night-backgrounds
 }
 ```
 

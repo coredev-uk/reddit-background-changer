@@ -82,8 +82,8 @@ else:
         path, data = FetchImage(False, j)
         ctypes.windll.user32.SystemParametersInfoW(20, 0, path, 0)
 
+time.sleep(2)
 if not SETTINGS["save-images"] and path:
-    time.sleep(2)
     os.remove(path)
 if data:
     toaster = ToastNotifier()

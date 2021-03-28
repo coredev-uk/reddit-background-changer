@@ -75,7 +75,10 @@ if (SETTINGS["night-backgrounds"] and datetime.now().time() >= s["sunset"].time(
 else:
     cached_hits = jsonFetch.cache_info().hits
     j = jsonFetch(SETTINGS['subreddit'])
-    if jsonFetch.cache_info().hits > cached_hits:
+    if SETTINGS["use-cache"] and jsonFetch.cache_info().hits > cached_hits:
+        path, data = FetchImage(False, j)
+        ctypes.windll.user32.SystemParametersInfoW(20, 0, path, 0)
+    else:
         path, data = FetchImage(False, j)
         ctypes.windll.user32.SystemParametersInfoW(20, 0, path, 0)
 

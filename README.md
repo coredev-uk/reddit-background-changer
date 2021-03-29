@@ -16,14 +16,14 @@ A simple python script that fetches an image from your desired subreddit and set
 - [Win10Toast-Click](https://pypi.org/project/win10toast-click/)
 
 ## Configuration
-*Edit this in [config.py](https://github.com/coredev-uk/reddit-background-changer/blob/main/config.py).*
+*Create a copy of below an name it `config.py`.*
 ```python
 SETTINGS = {
     "blacklist": ['7t0swm'], # Add the image id or if you use save-images you can use the file name of what you'd not like to see in the future
     "subreddits": ['EarthPorn', 'SkyPorn'], # Add your subreddit's here, its randomised each time its ran, so it'll be one from the list (it can just be one subreddit if you'd just like that)
     "save-images": False, # Allows you to store the backgrounds in an images folder instead of being deleted.
     "use-cache": False, # Enabling this would make you use the cache, only experimental and doesnt work if you use night backgrounds (stores the JSON and doesnt give you notification if the background is the same.)
-    "night-backgrounds": ['https://alinktosomecoolimage.png'], # Set background to an you found on the internet, leave it empy if you dont want a different background at night. Only happens at night (Easier for your eyes)
+    "night-backgrounds": ['https://alinktosomecoolimage.png', 'https://anothercoollink/cool-image.png'], # Set background to an you found on the internet, leave it empy if you dont want a different background at night. Only happens at night (Easier for your eyes)
     "city": 'London' # Put your local city here if you decide to use night-backgrounds, just leave it default if you dont want to use the night-backgrounds
 }
 ```

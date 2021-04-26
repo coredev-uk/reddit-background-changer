@@ -28,6 +28,9 @@ SETTINGS = {
 }
 ```
 
+## Night Backgrounds
+Just a note about the night-backgrounds, if you prefer to have a wide array of images stored locally for the night backgrounds, you can create a folder called `Custom-Backgrounds` and place your images in here, make sure the night-backgrounds list is also empty and it will pick a random image from that directory.
+
 ## Task Scheduler Setup
 1. Open Task Scheduler and click **New Task**.
 2. Fill out the name and description with whatever you'd like and leave all other settings default.

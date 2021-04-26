@@ -4,7 +4,7 @@ SETTINGS = {
     "subreddits": ['EarthPorn'],
     "save-images": False,
     "use-cache": False,
-    "night-backgrounds": ['https://i.imgur.com/WWCU4QW.png', 'https://i.imgur.com/tIujN5Y.png', 'https://i.imgur.com/Uyiy6ck.png', 'https://i.imgur.com/lJ6OeHg.jpg', 'https://i.imgur.com/0ivXAjd.jpg', 'https://i.imgur.com/7SUBRsL.jpg', 'https://i.imgur.com/YwH6ufM.jpg', 'https://i.imgur.com/yKC1iT3.jpg', 'https://i.imgur.com/NjN16Ua.jpg'],
+    "night-backgrounds": [],
     "city": 'London'
 }
 SETTINGS['subreddit'] = random.choice(SETTINGS['subreddits'])
@@ -52,16 +52,18 @@ def FetchImage(night, j):
             if current >= searchLimit:
                 link = j['data']['children'][0]['data']['url_overridden_by_dest']
     else:
-        link = random.choice(SETTINGS["night-backgrounds"])
-
-    name = link.split('/')[-1]
-    if SETTINGS["save-images"]:
-        name = 'images\\' + name
+        if SETTINGS["night-backgrounds"] and not os.path.exists('Custom-Backgrounds'):
+            link = random.choice(SETTINGS["night-backgrounds"])
+    
+    if link:
+        name = link.split('/')[-1]
+        if SETTINGS["save-images"]: name = 'images\\' + name
+        urllib.request.urlretrieve(link, name)
+    else:
+        name = random.choice(os.listdir("Custom-Backgrounds"))
 
     path = os.getcwd() + '\\' + name
-    urllib.request.urlretrieve(link, name)
-
-    print(name, link)
+    if not link: path = os.getcwd() + '\\Custom-Backgrounds\\' + name
 
     if night: return path, link
     return path, data
@@ -90,7 +92,7 @@ else:
         ctypes.windll.user32.SystemParametersInfoW(20, 0, path, 0)
 
 time.sleep(2)
-if not SETTINGS["save-images"] and path:
+if not SETTINGS["save-images"] and data and path:
     os.remove(path)
 if data:
     toaster = ToastNotifier()

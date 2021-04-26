@@ -98,4 +98,7 @@ if data:
     toaster = ToastNotifier()
     def toasterCallback():
         webbrowser.open_new(f"https://reddit.com{data['permalink']}")
+    urllib.request.urlretrieve("https://c0r3.uk/assets/img/reddit.ico", "reddit.ico")
     toaster.show_toast(f"New Background from {data['subreddit']}", f"{data['title']}", icon_path="reddit.ico", duration=None, threaded=True, callback_on_click=toasterCallback)
+    time.sleep(10)
+    os.remove("reddit.ico")

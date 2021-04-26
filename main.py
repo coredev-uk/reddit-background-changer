@@ -7,7 +7,6 @@ SETTINGS = {
     "night-backgrounds": [],
     "city": 'London'
 }
-SETTINGS['subreddit'] = random.choice(SETTINGS['subreddits'])
 
 ''' ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Functions
@@ -83,6 +82,7 @@ if (SETTINGS["night-backgrounds"] and datetime.now().time() >= s["sunset"].time(
     ctypes.windll.user32.SystemParametersInfoW(20, 0, path, 0)
 else:
     cached_hits = jsonFetch.cache_info().hits
+    SETTINGS['subreddit'] = random.choice(SETTINGS['subreddits'])
     j = jsonFetch(SETTINGS['subreddit'])
     if SETTINGS["use-cache"] and jsonFetch.cache_info().hits > cached_hits:
         path, data = FetchImage(False, j)

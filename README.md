@@ -1,9 +1,6 @@
 # Reddit Background Changer
 A simple python script that fetches an image from your desired subreddit and sets it to your background.
 
-## Experimental Build Notes
-Use at your own risk, this build is not the most stable and will most likely cause errors.
-
 ## Features
 - Pick your favourite subreddits
 - Custom background to use at night
@@ -14,12 +11,12 @@ Use at your own risk, this build is not the most stable and will most likely cau
 - Caches the JSON so you dont get notified if your background is the same (experimental option)
 
 ## Required Modules
-- [Astral](https://pypi.org/project/astral/)
 - [Win32Api](https://pypi.org/project/pywin32/)
 - [Win10Toast-Click](https://pypi.org/project/win10toast-click/)
+- [Astral](https://pypi.org/project/astral/) - Optional if you want to use the night backgrounds (Remove it from the imports if you dont want to use it)
 
 ## Configuration
-*Edit this in [config.py](https://github.com/coredev-uk/reddit-background-changer/blob/main/config.py).*
+*Edit this at the top of [main.py](https://github.com/coredev-uk/reddit-background-changer/blob/main/main.py#L5).*
 ```python
 SETTINGS = {
     "blacklist": ['7t0swm'], # Add the image id or if you use save-images you can use the file name of what you'd not like to see in the future
@@ -43,6 +40,7 @@ Just a note about the night-backgrounds, if you prefer to have a wide array of i
 
 ## Final Notes
 With the blacklist, to get the image id you just look at the link of the post.
+If you decide to use the experimental build, please be aware that there may be some errors or issues with it and if it breaks dont open an issue, it will probably be resolved in the future.
 
 ![Reddit Image ID](https://i.imgur.com/E2AQYv0.png "Reddit Image ID")
 

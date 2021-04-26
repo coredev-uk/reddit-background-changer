@@ -7,7 +7,6 @@ SETTINGS = {
     "night-backgrounds": [],
     "city": 'London'
 }
-SETTINGS['subreddit'] = random.choice(SETTINGS['subreddits'])
 
 ''' ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Functions
@@ -83,6 +82,7 @@ if (SETTINGS["night-backgrounds"] and datetime.now().time() >= s["sunset"].time(
     ctypes.windll.user32.SystemParametersInfoW(20, 0, path, 0)
 else:
     cached_hits = jsonFetch.cache_info().hits
+    SETTINGS['subreddit'] = random.choice(SETTINGS['subreddits'])
     j = jsonFetch(SETTINGS['subreddit'])
     if SETTINGS["use-cache"] and jsonFetch.cache_info().hits > cached_hits:
         path, data = FetchImage(False, j)
@@ -98,4 +98,7 @@ if data:
     toaster = ToastNotifier()
     def toasterCallback():
         webbrowser.open_new(f"https://reddit.com{data['permalink']}")
+    urllib.request.urlretrieve("https://www.reddit.com/favicon.ico", "reddit.ico")
     toaster.show_toast(f"New Background from {data['subreddit']}", f"{data['title']}", icon_path="reddit.ico", duration=None, threaded=True, callback_on_click=toasterCallback)
+    time.sleep(10)
+    os.remove("reddit.ico")

@@ -1,5 +1,12 @@
-import json, urllib.request, os, ctypes, time, random, webbrowser, functools, config;from datetime import datetime;from astral.sun import sun; from astral import LocationInfo;from win32api import GetSystemMetrics;from win10toast_click import ToastNotifier 
-SETTINGS = config.SETTINGS
+import json, urllib.request, os, ctypes, time, random, webbrowser, functools;from datetime import datetime;from astral.sun import sun; from astral import LocationInfo;from win32api import GetSystemMetrics;from win10toast_click import ToastNotifier 
+SETTINGS = {
+    "blacklist": [],
+    "subreddits": ['EarthPorn'],
+    "save-images": False,
+    "use-cache": False,
+    "night-backgrounds": [],
+    "city": 'London'
+}
 SETTINGS['subreddit'] = random.choice(SETTINGS['subreddits'])
 
 ''' ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -45,16 +52,18 @@ def FetchImage(night, j):
             if current >= searchLimit:
                 link = j['data']['children'][0]['data']['url_overridden_by_dest']
     else:
-        link = random.choice(SETTINGS["night-backgrounds"])
-
-    name = link.split('/')[-1]
-    if SETTINGS["save-images"]:
-        name = 'images\\' + name
+        if SETTINGS["night-backgrounds"] and not os.path.exists('Custom-Backgrounds'):
+            link = random.choice(SETTINGS["night-backgrounds"])
+    
+    if link:
+        name = link.split('/')[-1]
+        if SETTINGS["save-images"]: name = 'images\\' + name
+        urllib.request.urlretrieve(link, name)
+    else:
+        name = random.choice(os.listdir("Custom-Backgrounds"))
 
     path = os.getcwd() + '\\' + name
-    urllib.request.urlretrieve(link, name)
-
-    print(name, link)
+    if not link: path = os.getcwd() + '\\Custom-Backgrounds\\' + name
 
     if night: return path, link
     return path, data
@@ -83,7 +92,7 @@ else:
         ctypes.windll.user32.SystemParametersInfoW(20, 0, path, 0)
 
 time.sleep(2)
-if not SETTINGS["save-images"] and path:
+if not SETTINGS["save-images"] and data and path:
     os.remove(path)
 if data:
     toaster = ToastNotifier()

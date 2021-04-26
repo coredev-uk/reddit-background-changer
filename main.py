@@ -59,7 +59,7 @@ def FetchImage(night, j):
     
     if link:
         name = link.split('/')[-1]
-        if SETTINGS["save-images"]: name = 'images\\' + name
+        if SETTINGS["save-images"]: name = 'Downloaded-Images\\' + name
         urllib.request.urlretrieve(link, name)
     else:
         name = random.choice(os.listdir("Custom-Backgrounds"))
@@ -74,8 +74,8 @@ def FetchImage(night, j):
 Main
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ '''
 if SETTINGS["save-images"]:
-    if not os.path.exists('images'):
-        os.makedirs('images')
+    if not os.path.exists('Downloaded-Images'):
+        os.makedirs('Downloaded-Images')
 
 city = LocationInfo(SETTINGS["city"]);s = sun(city.observer, date=datetime.now())
 path, data = None, None

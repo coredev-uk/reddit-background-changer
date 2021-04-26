@@ -1,6 +1,9 @@
 # Reddit Background Changer
 A simple python script that fetches an image from your desired subreddit and sets it to your background.
 
+## Experimental Build Notes
+Use at your own risk, this build is not the most stable and will most likely cause errors.
+
 ## Features
 - Pick your favourite subreddits
 - Custom background to use at night

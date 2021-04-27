@@ -1,9 +1,6 @@
 # Reddit Background Changer
 A simple python script that fetches an image from your desired subreddit and sets it to your background.
 
-## Project Discontinued
-Project has been dicontinued and support is not provided.
-
 ## Features
 - Pick your favourite subreddits
 - Custom background to use at night
@@ -43,7 +40,6 @@ Just a note about the night-backgrounds, if you prefer to have a wide array of i
 
 ## Final Notes
 With the blacklist, to get the image id you just look at the link of the post.
-If you decide to use the experimental build, please be aware that there may be some errors or issues with it and if it breaks dont open an issue, it will probably be resolved in the future.
 
 ![Reddit Image ID](https://i.imgur.com/E2AQYv0.png "Reddit Image ID")
 

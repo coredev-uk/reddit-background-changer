@@ -1,25 +1,34 @@
-import json, urllib.request, os, ctypes, time, random, webbrowser, functools;from datetime import datetime;from astral.sun import sun; from astral import LocationInfo;from win32api import GetSystemMetrics;from win10toast_click import ToastNotifier 
+import json, urllib.request, os, ctypes, time, random, webbrowser, functools
+from datetime import datetime
+from astral.sun import sun
+from astral import LocationInfo
+from win32api import GetSystemMetrics
+from win10toast_click import ToastNotifier
+
 ''' ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Settings - Here is where you can configure the script
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ '''
 SETTINGS = {
     "blacklist": [],
     "subreddits": ['EarthPorn'],
-    "save-images": False,
     "use-cache": False,
-    "night-backgrounds": True, #this should be a list ["https://image.com/img.png", "https://image.com/img.jpg"] just using this as i use custom backgrounds
+    "night-backgrounds": True, # this should be a list ["https://image.com/img.png", "https://image.com/img.jpg"] just using this as i use custom backgrounds
     "city": 'London'
 }
 
 ''' ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Functions - Do not Touch Anything Below Here - Do not Touch Anything Below Here - Do not Touch Anything Below Here - 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ '''
+
+
 @functools.lru_cache(maxsize=len(SETTINGS['subreddits']))
 def jsonFetch(subreddit):
-    req = urllib.request.Request(f'https://www.reddit.com/r/{subreddit}/top.json', headers = {'User-agent': 'Reddit Background Setter (Created by u/Core_UK and u/Member87)'})
+    req = urllib.request.Request(f'https://www.reddit.com/r/{subreddit}/top.json', headers={
+        'User-agent': 'Reddit Background Setter (Created by u/Core_UK and u/Member87)'})
     res = urllib.request.urlopen(req)
     j = json.load(res)
     return j
+
 
 def ImageFilter(x, y, data):
     if not x > y:
@@ -32,6 +41,7 @@ def ImageFilter(x, y, data):
         if v in data['id'] or v in data['url_overridden_by_dest']:
             return False
     return True
+
 
 def FetchImage(night, j):
     link = None
@@ -56,32 +66,35 @@ def FetchImage(night, j):
     else:
         if SETTINGS["night-backgrounds"] and not os.path.exists('Custom-Backgrounds'):
             link = random.choice(SETTINGS["night-backgrounds"])
-    
+
     if link:
         name = link.split('/')[-1]
-        if SETTINGS["save-images"]: name = 'Downloaded-Images\\' + name
         urllib.request.urlretrieve(link, name)
     else:
         name = random.choice(os.listdir("Custom-Backgrounds"))
 
-    path = os.getcwd() + '\\' + name
+    path = os.getcwd() + '\\Downloaded-Images\\' + name
     if not link: path = os.getcwd() + '\\Custom-Backgrounds\\' + name
 
     if night: return path, link
     return path, data
 
+
 ''' ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Main
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ '''
-if SETTINGS["save-images"]:
-    if not os.path.exists('Downloaded-Images'):
-        os.makedirs('Downloaded-Images')
+if not os.path.exists('Downloaded-Images'):
+    os.makedirs('Downloaded-Images')
 
-city = LocationInfo(SETTINGS["city"]);s = sun(city.observer, date=datetime.now())
+
+
+city = LocationInfo(SETTINGS["city"]);
+s = sun(city.observer, date=datetime.now())
 path, data = None, None
 
-if (SETTINGS["night-backgrounds"] and datetime.now().time() >= s["sunset"].time() or datetime.now().time() <= s["sunrise"].time()): # night
-    path, link = FetchImage(True, None); link_extension = (path.split('\\')[-1]).split(".", 1)[0]
+if (SETTINGS["night-backgrounds"] and datetime.now().time() >= s["sunset"].time() or datetime.now().time() <= s["sunrise"].time()):  # night
+    path, link = FetchImage(True, None)
+    link_extension = (path.split('\\')[-1]).split(".", 1)[0]
     ctypes.windll.user32.SystemParametersInfoW(20, 0, path, 0)
 else:
     cached_hits = jsonFetch.cache_info().hits
@@ -94,11 +107,13 @@ else:
         path, data = FetchImage(False, j)
         ctypes.windll.user32.SystemParametersInfoW(20, 0, path, 0)
 
-time.sleep(2)
-if not SETTINGS["save-images"] and data and path:
-    os.remove(path)
 if data:
     toaster = ToastNotifier()
+
+
     def toasterCallback():
         webbrowser.open_new(f"https://reddit.com{data['permalink']}")
-    toaster.show_toast(f"New Background from {data['subreddit']}", f"{data['title']}", icon_path="reddit.ico", duration=None, threaded=True, callback_on_click=toasterCallback)
+
+
+    toaster.show_toast(f"New Background from {data['subreddit']}", f"{data['title']}", icon_path="reddit.ico",
+                       duration=None, threaded=True, callback_on_click=toasterCallback)

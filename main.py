@@ -1,33 +1,50 @@
-import json, urllib.request, os, ctypes, time, random, webbrowser, functools
-from datetime import datetime
-from astral.sun import sun
-from astral import LocationInfo
+import ctypes
+import json
+import os
+import random
+import urllib.request
+import webbrowser
 from win32api import GetSystemMetrics
-from win10toast_click import ToastNotifier
+from PIL import Image
 
-''' ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+''' ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Settings - Here is where you can configure the script
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ '''
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ '''
 SETTINGS = {
     "blacklist": [],
     "subreddits": ['EarthPorn'],
-    "use-cache": False,
-    "night-backgrounds": True, # this should be a list ["https://image.com/img.png", "https://image.com/img.jpg"] just using this as i use custom backgrounds
-    "city": 'London'
+    "night-backgrounds": {
+        "toggle": True,
+        "links": [],
+        "city": 'London'
+    }
 }
-
-''' ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+s = SETTINGS
+''' ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Functions - Do not Touch Anything Below Here - Do not Touch Anything Below Here - Do not Touch Anything Below Here - 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ '''
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ '''
 
 
-@functools.lru_cache(maxsize=len(SETTINGS['subreddits']))
 def jsonFetch(subreddit):
     req = urllib.request.Request(f'https://www.reddit.com/r/{subreddit}/top.json', headers={
         'User-agent': 'Reddit Background Setter (Created by u/Core_UK and u/Member87)'})
     res = urllib.request.urlopen(req)
     j = json.load(res)
     return j
+
+
+def Notify(msg, title, link, icon, filename):
+    def linkOpen():
+        if filename:
+            img = Image.open("Custom-Backgrounds\\" + filename)
+            img.show()
+        else:
+            webbrowser.open_new(link)
+
+    from win10toast_click import ToastNotifier
+    toaster = ToastNotifier()
+    toaster.show_toast(msg, title, icon_path=icon,
+                       duration=None, threaded=True, callback_on_click=linkOpen)
 
 
 def ImageFilter(x, y, data):
@@ -44,76 +61,80 @@ def ImageFilter(x, y, data):
 
 
 def FetchImage(night, j):
-    link = None
+    url = None
 
     if not night:
         searchLimit = len(j['data']['children'])
         current = 0
-        while not link:
-            data = j['data']['children'][current]['data']
+        while not url:
+            Data = j['data']['children'][current]['data']
             try:
-                img = data['preview']['images'][0]['source']
-                url = data['url_overridden_by_dest']
-                if ImageFilter(img['width'], img['height'], data):
-                    link = url
+                img = Data['preview']['images'][0]['source']
+                FoundURL = Data['url_overridden_by_dest']
+                if ImageFilter(img['width'], img['height'], Data):
+                    url = FoundURL
                 else:
                     current += 1
             except:
                 current += 1
 
             if current >= searchLimit:
-                link = j['data']['children'][0]['data']['url_overridden_by_dest']
+                url = j['data']['children'][0]['data']['url_overridden_by_dest']
     else:
-        if SETTINGS["night-backgrounds"] and not os.path.exists('Custom-Backgrounds'):
-            link = random.choice(SETTINGS["night-backgrounds"])
+        if os.path.exists('Custom-Backgrounds') and not s["night-backgrounds"]["links"]:
+            FileName = random.choice(os.listdir("Custom-Backgrounds"))
+        else:
+            url = random.choice(s["night-backgrounds"]["links"])
 
-    if link:
-        name = link.split('/')[-1]
-        urllib.request.urlretrieve(link, name)
+    if url:
+        Path = os.getcwd() + '\\Downloaded-Images\\' + url.split('/')[-1]
+        urllib.request.urlretrieve(url, Path)
     else:
-        name = random.choice(os.listdir("Custom-Backgrounds"))
+        Path = os.getcwd() + '\\Custom-Backgrounds\\' + FileName
 
-    path = os.getcwd() + '\\Downloaded-Images\\' + name
-    if not link: path = os.getcwd() + '\\Custom-Backgrounds\\' + name
-
-    if night: return path, link
-    return path, data
-
-
-''' ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Main
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ '''
-if not os.path.exists('Downloaded-Images'):
-    os.makedirs('Downloaded-Images')
+    if night:
+        try:
+            image = Image.open(Path)
+            image.format
+        except:
+            return "No Image Found - Please Populate Custom-Backgrounds", None
+        return Path, url
+    return Path, Data
 
 
+def IsNight():
+    from astral.sun import sun
+    from astral import LocationInfo
+    from datetime import datetime
 
-city = LocationInfo(SETTINGS["city"]);
-s = sun(city.observer, date=datetime.now())
-path, data = None, None
+    city = LocationInfo(s["night-backgrounds"]["city"])
+    sunTime = sun(city.observer, date=datetime.now())
+    if datetime.now().time() >= sunTime["sunset"].time() or datetime.now().time() <= sunTime["sunrise"].time():
+        return True
 
-if (SETTINGS["night-backgrounds"] and datetime.now().time() >= s["sunset"].time() or datetime.now().time() <= s["sunrise"].time()):  # night
-    path, link = FetchImage(True, None)
-    link_extension = (path.split('\\')[-1]).split(".", 1)[0]
-    ctypes.windll.user32.SystemParametersInfoW(20, 0, path, 0)
-else:
-    cached_hits = jsonFetch.cache_info().hits
-    SETTINGS['subreddit'] = random.choice(SETTINGS['subreddits'])
-    j = jsonFetch(SETTINGS['subreddit'])
-    if SETTINGS["use-cache"] and jsonFetch.cache_info().hits > cached_hits:
-        path, data = FetchImage(False, j)
+
+def main():
+    if not os.path.exists('Downloaded-Images'):
+        os.makedirs('Downloaded-Images')
+    if not s["night-backgrounds"]["links"] and not os.path.exists('Custom-Backgrounds'):
+        os.makedirs('Custom-Backgrounds')
+        f = open("Custom-Backgrounds\\PUT CUSTOM IMAGES IN HERE (CAN BE ANY NORMAL IMAGE TYPE)", "x")
+
+    Night = False
+    if s["night-backgrounds"]["city"] and s["night-backgrounds"]["toggle"]:
+        Night = IsNight()
+
+    if Night:
+        path, link = FetchImage(True, None)
+        FileName = (path.split('\\')[-1])
         ctypes.windll.user32.SystemParametersInfoW(20, 0, path, 0)
+        Notify("New Background from Custom-Backgrounds", FileName, False, None, FileName)
     else:
-        path, data = FetchImage(False, j)
+        path, data = FetchImage(False, jsonFetch(random.choice(SETTINGS['subreddits'])))
         ctypes.windll.user32.SystemParametersInfoW(20, 0, path, 0)
-
-if data:
-    toaster = ToastNotifier()
-
-
-    def toasterCallback():
-        webbrowser.open_new(f"https://reddit.com{data['permalink']}")
+        Notify(f"New Background from {data['subreddit']}", f"{data['title']}", f"https://reddit.com{data['permalink']}",
+               "reddit.ico", False)
 
 
-    toaster.show_toast(f"New Background from {data['subreddit']}", f"{data['title']}", icon_path="reddit.ico",
-                       duration=None, threaded=True, callback_on_click=toasterCallback)
+if __name__ == "__main__":
+    main()

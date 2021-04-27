@@ -7,7 +7,7 @@ SETTINGS = {
     "subreddits": ['EarthPorn'],
     "save-images": False,
     "use-cache": False,
-    "night-backgrounds": [],
+    "night-backgrounds": True, #this should be a list ["https://image.com/img.png", "https://image.com/img.jpg"] just using this as i use custom backgrounds
     "city": 'London'
 }
 

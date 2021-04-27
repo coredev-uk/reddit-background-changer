@@ -1,6 +1,9 @@
 # Reddit Background Changer
 A simple python script that fetches an image from your desired subreddit and sets it to your background.
 
+## Project Discontinued
+Project has been dicontinued and support is not provided.
+
 ## Features
 - Pick your favourite subreddits
 - Custom background to use at night
@@ -11,7 +14,7 @@ A simple python script that fetches an image from your desired subreddit and set
 - Caches the JSON so you dont get notified if your background is the same (experimental option)
 
 ## Required Modules
-- [Win32Api](https://pypi.org/project/pywin32/)
+- [PyWin32](https://pypi.org/project/pywin32/)
 - [Win10Toast-Click](https://pypi.org/project/win10toast-click/)
 - [Astral](https://pypi.org/project/astral/) - Optional if you want to use the night backgrounds (Remove it from the imports if you dont want to use it)
 
@@ -49,3 +52,6 @@ You can open the page of your background by clicking on the notification of when
 
 ## Credits
 [Member87](https://github.com/member87) - Made the base script and helped out with additions I made
+
+## Alternatives
+I highly recommend [Reddit-Wallpaper](https://github.com/Mamiglia/Reddit-Wallpaper) by Mamaiglia is you are looking for a UI based Wallpaper Change.

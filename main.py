@@ -94,7 +94,7 @@ def FetchImage(night, j):
     if url:
         Path = os.getcwd() + '\\Downloaded-Images\\' + url.split('/')[-1]
         if not url.split('/')[-1] in s["night-backgrounds"]["links"] and os.path.exists(Path):
-            return False, False
+            return Path, Data, True
         urllib.request.urlretrieve(url, Path)
     else:
         Path = os.getcwd() + '\\Custom-Backgrounds\\' + FileName
@@ -105,8 +105,8 @@ def FetchImage(night, j):
             image.format
         except:
             return "No Image Found - Please Populate Custom-Backgrounds", None
-        return Path, url
-    return Path, Data
+        return Path, url, False
+    return Path, Data, False
 
 
 def IsNight():
@@ -141,12 +141,15 @@ def main():
         if s["night-backgrounds"]["notify"]:
             ("New Background from Custom-Backgrounds", FileName, False, None, FileName)
     else:
-        path, data = FetchImage(False, jsonFetch(random.choice(SETTINGS['subreddits'])))
+        path, data, exists = FetchImage(False, jsonFetch(random.choice(SETTINGS['subreddits'])))
         if path and data:
             ctypes.windll.user32.SystemParametersInfoW(20, 0, path, 0)
-            Notify(f"New Background from {data['subreddit']}", f"{data['title']}",
-                   f"https://reddit.com{data['permalink']}",
-                   "reddit.ico", False)
+            print(f'Found Path: {path}')
+            print(f'Does File Exist: {exists}')
+            if not exists:
+                Notify(f"New Background from {data['subreddit']}", f"{data['title']}",
+                       f"https://reddit.com{data['permalink']}",
+                       "reddit.ico", False)
 
 
 if __name__ == "__main__":

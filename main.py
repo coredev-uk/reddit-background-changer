@@ -14,6 +14,8 @@ SETTINGS = {
     "blacklist": [],
     "subreddits": ['EarthPorn'],
     "diff-bg": False,
+    "monitor-x": "",
+    "monitor-y": "",
     "night-backgrounds": {
         "toggle": True,
         "links": [],
@@ -35,10 +37,10 @@ def jsonFetch(subreddit):
     return j
 
 
-def Notify(msg, title, link, icon, filename):
+def Notify(msg, title, link, icon, path):
     def linkOpen():
-        if filename:
-            img = Image.open("Custom-Backgrounds\\" + filename)
+        if not link:
+            img = Image.open(path)
             img.show()
         else:
             webbrowser.open_new(link)
@@ -47,6 +49,22 @@ def Notify(msg, title, link, icon, filename):
     toaster = ToastNotifier()
     toaster.show_toast(msg, title, icon_path=icon,
                        duration=None, threaded=True, callback_on_click=linkOpen)
+
+
+def IsNight():
+    from astral.sun import sun
+    from astral import LocationInfo
+    from datetime import datetime
+
+    # wipes downloaded images folder for the 'caching' method
+    if os.listdir("Downloaded-Images"):
+        for f in os.listdir("Downloaded-Images"):
+            os.remove(os.path.join("Downloaded-Images", f))
+
+    city = LocationInfo(s["night-backgrounds"]["city"])
+    sunTime = sun(city.observer, date=datetime.now())
+    if datetime.now().time() >= sunTime["sunset"].time() or datetime.now().time() <= sunTime["sunrise"].time():
+        return True
 
 
 def ImageFilter(x, y, data):
@@ -65,92 +83,93 @@ def ImageFilter(x, y, data):
     return True
 
 
-def FetchImage(night, j):
+def FetchRedditImage(j):
     url = None
+    current = 0
+    searchLimit = len(j['data']['children'])
 
-    if not night:
-        searchLimit = len(j['data']['children'])
-        current = 0
-        while not url:
-            Data = j['data']['children'][current]['data']
-            try:
-                img = Data['preview']['images'][0]['source']
-                FoundURL = Data['url_overridden_by_dest']
-                if ImageFilter(img['width'], img['height'], Data):
-                    url = FoundURL
-                else:
-                    current += 1
-            except:
-                current += 1
-
-            if current >= searchLimit:
-                url = j['data']['children'][0]['data']['url_overridden_by_dest']
-    else:
-        if os.path.exists('Custom-Backgrounds') and not s["night-backgrounds"]["links"]:
-            FileName = random.choice(os.listdir("Custom-Backgrounds"))
-        else:
-            url = random.choice(s["night-backgrounds"]["links"])
-
-    if url:
-        Path = os.getcwd() + '\\Downloaded-Images\\' + url.split('/')[-1]
-        if not url.split('/')[-1] in s["night-backgrounds"]["links"] and os.path.exists(Path):
-            return Path, Data, True
-        urllib.request.urlretrieve(url, Path)
-    else:
-        Path = os.getcwd() + '\\Custom-Backgrounds\\' + FileName
-
-    if night:
+    while not url:
+        Data = j['data']['children'][current]['data']
         try:
-            image = Image.open(Path)
-            image.format
+            img = Data['preview']['images'][0]['source']
+            FoundURL = Data['url_overridden_by_dest']
+            if ImageFilter(img['width'], img['height'], Data):
+                url = FoundURL
+            else:
+                current += 1
         except:
-            return "No Image Found - Please Populate Custom-Backgrounds", None
-        return Path, url, False
+            current += 1
+
+        if current >= searchLimit:
+            url = j['data']['children'][0]['data']['url_overridden_by_dest']
+
+    Path = os.getcwd() + '\\Downloaded-Images\\' + url.split('/')[-1]
+    if os.path.exists(Path):
+        return Path, Data, True
+    urllib.request.urlretrieve(url, Path)
+    try:
+        image = Image.open(Path)
+        image.format
+    except:
+        return "No Image Found in the Correct Format. - Recommended to use a difference subreddit.", Data, False
     return Path, Data, False
 
 
-def IsNight():
-    from astral.sun import sun
-    from astral import LocationInfo
-    from datetime import datetime
+def FetchImage():
+    if os.path.exists('Custom-Backgrounds') and not s["night-backgrounds"]["links"]:
+        FileName = random.choice(os.listdir("Custom-Backgrounds"))
+        Path = os.getcwd() + '\\Custom-Backgrounds\\' + FileName
+        url = False
+    else:
+        url = random.choice(s["night-backgrounds"]["links"])
+        Path = os.getcwd() + '\\Downloaded-Images\\' + url.split('/')[-1]
+        if os.path.exists(Path):
+            return Path, url
+        urllib.request.urlretrieve(url, Path)
 
-    city = LocationInfo(s["night-backgrounds"]["city"])
-    sunTime = sun(city.observer, date=datetime.now())
-    if datetime.now().time() >= sunTime["sunset"].time() or datetime.now().time() <= sunTime["sunrise"].time():
-        return True
+    try:
+        image = Image.open(Path)
+        image.format
+    except:
+        return "No Image Found in the Correct Format - Please check your links or your Custom-Backgrounds directory.", url
+    return Path, url
 
 
-def main():
+''' ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Main
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ '''
+
+
+def setup():
     if not os.path.exists('Downloaded-Images'):
         os.makedirs('Downloaded-Images')
     if not s["night-backgrounds"]["links"] and not os.path.exists('Custom-Backgrounds'):
         os.makedirs('Custom-Backgrounds')
         f = open("Custom-Backgrounds\\PUT CUSTOM IMAGES IN HERE (CAN BE ANY NORMAL IMAGE TYPE)", "x")
+    if not s["monitor-x"]:
+        s["monitor-x"] = GetSystemMetrics(0)
+    if not s["monitor-y"]:
+        s["monitor-y"] = GetSystemMetrics(1)
 
-    Night = False
-    if s["night-backgrounds"]["city"] and s["night-backgrounds"]["toggle"]:
-        Night = IsNight()
 
-    if Night:
-        if os.listdir("Downloaded-Images"):
-            for f in os.listdir("Downloaded-Images"):
-                os.remove(os.path.join("Downloaded-Images", f))
-        path, link = FetchImage(True, None)
-        FileName = (path.split('\\')[-1])
+def main():
+    if s["night-backgrounds"]["toggle"] and IsNight():
+        # Night Background Fetch
+        path, link = FetchImage()
         ctypes.windll.user32.SystemParametersInfoW(20, 0, path, 0)
         if s["night-backgrounds"]["notify"]:
-            ("New Background from Custom-Backgrounds", FileName, False, None, FileName)
+            Notify("New Background from Custom-Backgrounds", path.split('\\')[-1], link, None, path)
     else:
-        path, data, exists = FetchImage(False, jsonFetch(random.choice(SETTINGS['subreddits'])))
+        # Reddit Background Fetch
+        path, data, exists = FetchRedditImage(jsonFetch(random.choice(SETTINGS['subreddits'])))
         if path and data:
             ctypes.windll.user32.SystemParametersInfoW(20, 0, path, 0)
-            print(f'Found Path: {path}')
-            print(f'Does File Exist: {exists}')
             if not exists:
-                Notify(f"New Background from {data['subreddit']}", f"{data['title']}",
-                       f"https://reddit.com{data['permalink']}",
-                       "reddit.ico", False)
+                Notify(f"New Background from {data['subreddit']}", f"{data['title']}", f"https://reddit.com{data['permalink']}", "reddit.ico", False)
+        else:
+            Notify(path, "Error", False, "reddit.ico", False)
 
 
 if __name__ == "__main__":
+    setup()
     main()

@@ -13,10 +13,12 @@ Settings - Here is where you can configure the script
 SETTINGS = {
     "blacklist": [],
     "subreddits": ['EarthPorn'],
+    "diff-bg": False,
     "night-backgrounds": {
         "toggle": True,
         "links": [],
-        "city": 'London'
+        "city": 'London',
+        "notify": False
     }
 }
 s = SETTINGS
@@ -57,6 +59,9 @@ def ImageFilter(x, y, data):
     for v in SETTINGS["blacklist"]:
         if v in data['id'] or v in data['url_overridden_by_dest']:
             return False
+    if s["diff-bg"] and os.path.exists(os.getcwd() + "\\Downloaded-Images\\" + data['url_overridden_by_dest'].split('/')[-1]):
+        return False
+
     return True
 
 
@@ -88,6 +93,8 @@ def FetchImage(night, j):
 
     if url:
         Path = os.getcwd() + '\\Downloaded-Images\\' + url.split('/')[-1]
+        if not url.split('/')[-1] in s["night-backgrounds"]["links"] and os.path.exists(Path):
+            return False, False
         urllib.request.urlretrieve(url, Path)
     else:
         Path = os.getcwd() + '\\Custom-Backgrounds\\' + FileName
@@ -125,15 +132,21 @@ def main():
         Night = IsNight()
 
     if Night:
+        if os.listdir("Downloaded-Images"):
+            for f in os.listdir("Downloaded-Images"):
+                os.remove(os.path.join("Downloaded-Images", f))
         path, link = FetchImage(True, None)
         FileName = (path.split('\\')[-1])
         ctypes.windll.user32.SystemParametersInfoW(20, 0, path, 0)
-        Notify("New Background from Custom-Backgrounds", FileName, False, None, FileName)
+        if s["night-backgrounds"]["notify"]:
+            ("New Background from Custom-Backgrounds", FileName, False, None, FileName)
     else:
         path, data = FetchImage(False, jsonFetch(random.choice(SETTINGS['subreddits'])))
-        ctypes.windll.user32.SystemParametersInfoW(20, 0, path, 0)
-        Notify(f"New Background from {data['subreddit']}", f"{data['title']}", f"https://reddit.com{data['permalink']}",
-               "reddit.ico", False)
+        if path and data:
+            ctypes.windll.user32.SystemParametersInfoW(20, 0, path, 0)
+            Notify(f"New Background from {data['subreddit']}", f"{data['title']}",
+                   f"https://reddit.com{data['permalink']}",
+                   "reddit.ico", False)
 
 
 if __name__ == "__main__":

@@ -8,6 +8,7 @@ import random
 from config import SETTINGS as s
 from PIL import Image
 
+
 def jsonFetch(subreddit):
     req = urllib.request.Request(f'https://www.reddit.com/r/{subreddit}/top.json', headers={
         'User-agent': 'Reddit Background Setter (Created by u/Core_UK and u/Member87)'})

@@ -33,7 +33,7 @@ def main():
         if path and data:
             ctypes.windll.user32.SystemParametersInfoW(20, 0, path, 0)
             if not exists:
-                funcs.Notify(f"New Background from {data['subreddit']}", f"{data['title']}", f"https://reddit.com{data['permalink']}", "reddit.ico", False)
+                funcs.Notify(f"New Background from {data['subreddit']}", f"{data['title']}", f"https://reddit.com{data['permalink']}", "bin/reddit.ico", False)
         else:
             funcs.Notify(path, "Error", False, "reddit.ico", False)
 

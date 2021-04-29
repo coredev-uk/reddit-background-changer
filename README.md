@@ -14,7 +14,7 @@ A simple python script that fetches an image from your desired subreddit and set
 - [Astral](https://pypi.org/project/astral/) - Optional if you want to use the night backgrounds (Remove it from the imports if you don't want to use it)
 
 ## Configuration
-*Edit this at the top of [main.py](https://github.com/coredev-uk/reddit-background-changer/blob/main/main.py#L5).*
+*Edit this in [config.py](https://github.com/coredev-uk/reddit-background-changer/blob/main/config.py#L3).*
 ```python
 SETTINGS = {
     "blacklist": ['7t0swm'], # Add the image id or if you use save-images you can use the file name of what you'd not like to see in the future

@@ -5,9 +5,16 @@ $ActionParameters = @{
     Argument = $PSScriptRoot + '-File main.py'
 }
 
-$Action = New-ScheduledTaskAction @ActionParameters
+$Trigger = New-ScheduledTaskTrigger = @{
+    
+}
 
-$Settings = New-ScheduledTaskSettingsSet
+$Action = New-ScheduledTaskAction @ActionParameters
+$Settings = New-ScheduledTaskSettingsSet -RunOnlyIfNetworkAvailable
+
+$Frequency = Read-Host "How often would you like your background to change?\n Available Values:\n- "
+
+if Frequency
 
 $RegSchTaskParameters = @{
     TaskName    = 'Reddit Background Changer'
@@ -15,7 +22,7 @@ $RegSchTaskParameters = @{
     TaskPath    = '\Custom Tasks\'
     Action      = $Action
     Settings    = $Settings
-    Trigger     = $Trigger
+    Trigger     = $Trigger -AtLogOn
 }
 
 Register-ScheduledTask @RegSchTaskParameters

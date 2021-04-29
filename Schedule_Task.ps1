@@ -1,22 +1,25 @@
 # Schedule_Task.ps1
 
-# Register the new PowerShell scheduled task
+$ActionParameters = @{
+    Execute  = '.env\pythonw.exe'
+    Argument = $PSScriptRoot + '-File main.py'
+}
 
-# The name of your scheduled task.
-$taskName = "ExportAppLog"
-$taskPath = "Custom Tasks/Reddit Background Changer"
+$Action = New-ScheduledTaskAction @ActionParameters
 
-# Describe the scheduled task.
-$description = "Export the 10 newest events in the application log"
+$Settings = New-ScheduledTaskSettingsSet
 
-# Register the scheduled task
-Register-ScheduledTask `
-    -TaskName $taskName `
-    -TaskPath $taskPath `
-    -Action $taskAction `
-    -Trigger $taskTrigger `
-    -Description $description
+$RegSchTaskParameters = @{
+    TaskName    = 'Reddit Background Changer'
+    Description = '(empty)'
+    TaskPath    = '\Custom Tasks\'
+    Action      = $Action
+    Settings    = $Settings
+    Trigger     = $Trigger
+}
 
-    https://docs.microsoft.com/en-us/powershell/module/scheduledtasks/register-scheduledtask?view=winserver2012r2-ps
-    https://devblogs.microsoft.com/scripting/use-powershell-to-create-scheduled-tasks/
-    https://xplantefeve.io/posts/SchdTskOnEvent
+Register-ScheduledTask @RegSchTaskParameters
+
+# https://docs.microsoft.com/en-us/powershell/module/scheduledtasks/register-scheduledtask?view=winserver2012r2-ps
+# https://devblogs.microsoft.com/scripting/use-powershell-to-create-scheduled-tasks/
+# https://xplantefeve.io/posts/SchdTskOnEvent

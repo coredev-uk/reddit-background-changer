@@ -15,6 +15,6 @@ SETTINGS = {
             "local": True,
         },
         "city": 'London',
-        "notify": False,
+        "notify": False
     }
 }

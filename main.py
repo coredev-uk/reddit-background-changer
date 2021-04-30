@@ -11,7 +11,7 @@ from config import SETTINGS as s
 def setup():
     if not os.path.exists('Downloaded-Images'):
         os.makedirs('Downloaded-Images')
-    if not s["night-backgrounds"]["links"] and not os.path.exists('Custom-Backgrounds'):
+    if not s["night-backgrounds"]["methods"]["links"] and not os.path.exists('Custom-Backgrounds'):
         os.makedirs('Custom-Backgrounds')
         f = open("Custom-Backgrounds\\PUT CUSTOM IMAGES IN HERE (CAN BE ANY NORMAL IMAGE TYPE)", "x")
     if not s["monitor-x"]:

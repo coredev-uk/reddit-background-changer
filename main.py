@@ -23,7 +23,7 @@ def setup():
 def main():
     if s["night-backgrounds"]["toggle"] and funcs.IsNight():
         # Night Background Fetch
-        path, link = funcs.FetchImage()
+        path, link = funcs.FetchImage(s["night-backgrounds"]["methods"]["chosen-method"])
         ctypes.windll.user32.SystemParametersInfoW(20, 0, path, 0)
         if s["night-backgrounds"]["notify"]:
             funcs.Notify("New Background from Custom-Backgrounds", path.split('\\')[-1], link, None, path)

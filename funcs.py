@@ -36,14 +36,13 @@ def IsNight():
     from astral import LocationInfo
     from datetime import datetime
 
-    # wipes downloaded images folder for the 'caching' method
-    if os.listdir("Downloaded-Images"):
-        for f in os.listdir("Downloaded-Images"):
-            os.remove(os.path.join("Downloaded-Images", f))
-
     city = LocationInfo(s["night-backgrounds"]["city"])
     sunTime = sun(city.observer, date=datetime.now())
     if datetime.now().time() >= sunTime["sunset"].time() or datetime.now().time() <= sunTime["sunrise"].time():
+        # wipes downloaded images folder for the 'caching' method
+        if os.listdir("Downloaded-Images"):
+            for f in os.listdir("Downloaded-Images"):
+                os.remove(os.path.join("Downloaded-Images", f))
         return True
 
 
@@ -57,7 +56,8 @@ def ImageFilter(x, y, data):
     for v in s["blacklist"]:
         if v in data['id'] or v in data['url_overridden_by_dest']:
             return False
-    if s["diff-bg"] and os.path.exists(os.getcwd() + "\\Downloaded-Images\\" + data['url_overridden_by_dest'].split('/')[-1]):
+    if s["diff-bg"] and os.path.exists(
+            os.getcwd() + "\\Downloaded-Images\\" + data['url_overridden_by_dest'].split('/')[-1]):
         return False
 
     return True
@@ -95,17 +95,37 @@ def FetchRedditImage(j):
     return Path, Data, False
 
 
-def FetchImage():
-    if os.path.exists('Custom-Backgrounds') and not s["night-backgrounds"]["links"]:
+def FetchImage(method):
+    Path = None
+    url = None
+    if method == "local" and os.path.exists('Custom-Backgrounds') and s["night-backgrounds"]["methods"]["local"]:
         FileName = random.choice(os.listdir("Custom-Backgrounds"))
         Path = os.getcwd() + '\\Custom-Backgrounds\\' + FileName
         url = False
-    else:
+    elif method == "link" and s["night-backgrounds"]["methods"]["links"]:
         url = random.choice(s["night-backgrounds"]["links"])
         Path = os.getcwd() + '\\Downloaded-Images\\' + url.split('/')[-1]
         if os.path.exists(Path):
             return Path, url
         urllib.request.urlretrieve(url, Path)
+    elif method == "subreddit" and s["night-backgrounds"]["methods"]["subreddits"]:
+        Path, data, exists = FetchRedditImage(jsonFetch(random.choice(s["night-backgrounds"]["methods"]["subreddits"])))
+        url = f"https://reddit.com{data['permalink']}"
+        if os.path.exists(Path):
+            return Path, url
+    elif method == "all":
+        methods = []
+        if s["night-backgrounds"]["methods"]["subreddits"]:
+            methods.append("subreddit")
+        elif s["night-backgrounds"]["methods"]["links"]:
+            methods.append("link")
+        elif s["night-backgrounds"]["methods"]["local"] and os.path.exists('Custom-Backgrounds'):
+            methods.append("local")
+
+        RandomMethod = random.choice(methods)
+        Path, url = FetchImage(RandomMethod)
+    else:
+        return "No Method Selected, Please select a method in the configuration file.", url
 
     try:
         image = Image.open(Path)

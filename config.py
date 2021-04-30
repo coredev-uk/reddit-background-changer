@@ -8,8 +8,13 @@ SETTINGS = {
     "monitor-y": "",
     "night-backgrounds": {
         "toggle": True,
-        "links": [],
+        "methods": {
+            "chosen-method": "All", # Link / Local / SubReddit / All
+            "links": [],
+            "subreddits": ['SpaceX', 'SpacePorn'],
+            "local": True,
+        },
         "city": 'London',
-        "notify": False
+        "notify": False,
     }
 }

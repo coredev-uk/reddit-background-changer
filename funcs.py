@@ -5,11 +5,33 @@ import urllib.request
 import webbrowser
 import os
 import random
-from config import SETTINGS as s
-from PIL import Image
+import logging
+import shutil
+from datetime import datetime
+from config import SETTINGS as s, debug, debugNight, debugNotify
+
+
+def logging_init():
+    if debug:
+        logging.basicConfig(filename='console.log', level=logging.DEBUG)  # Setup logging
+        file = open("console.log", "r+")
+        file.truncate(0)
+        file.close()
+        log('[Init] RedditBackgroundChanger Log Initialised.')
+    if not debug and os.path.exists('console.log'):
+        os.remove('console.log')
+
+
+def log(message):
+    if not debug: return
+    now = datetime.now()
+    print(f'{now.strftime("%H:%M:%S [%d.%m.%Y]")} | {message}')
+    logging.debug(f'{now.strftime("%H:%M:%S [%d.%m.%Y]")} | {message}')
 
 
 def jsonFetch(subreddit):
+    log(f'[jsonFetch] Running')
+    log(f'[jsonFetch] Subreddit: {subreddit}')
     req = urllib.request.Request(f'https://www.reddit.com/r/{subreddit}/top.json', headers={
         'User-agent': 'Reddit Background Setter (Created by u/Core_UK and u/Member87)'})
     res = urllib.request.urlopen(req)
@@ -20,54 +42,144 @@ def jsonFetch(subreddit):
 def Notify(msg, title, link, icon, path):
     def linkOpen():
         if not link:
+            from PIL import Image
             img = Image.open(path)
             img.show()
         else:
             webbrowser.open_new(link)
 
     from win10toast_click import ToastNotifier
+    log(f'[Notify] -------------------------------------NEW NOTIFICATION------------------------------------')
+    log(f'[Notify] Running')
+    log(f'[Notify] Message: {msg}')
+    log(f'[Notify] Title: {title}')
+    log(f'[Notify] Link: {link}')
+    log(f'[Notify] Icon: {icon}')
+    log(f'[Notify] Path: {path}')
+    log(f'[Notify] -----------------------------------------------------------------------------------------')
     toaster = ToastNotifier()
     toaster.show_toast(msg, title, icon_path=icon,
                        duration=None, threaded=True, callback_on_click=linkOpen)
 
 
-def IsNight():
+def IsNight(city):
+    if not s["night-backgrounds"]["toggle"]: return False
     from astral.sun import sun
     from astral import LocationInfo
-    from datetime import datetime
-
-    city = LocationInfo(s["night-backgrounds"]["city"])
+    log(f'[IsNight] ----------------------------------------------------------------------------------------')
+    log('[IsNight] Running')
+    city = LocationInfo(city)
     sunTime = sun(city.observer, date=datetime.now())
-    if datetime.now().time() >= sunTime["sunset"].time() or datetime.now().time() <= sunTime["sunrise"].time():
-        # wipes downloaded images folder for the 'caching' method
-        if os.listdir("Downloaded-Images"):
-            for f in os.listdir("Downloaded-Images"):
-                os.remove(os.path.join("Downloaded-Images", f))
+    sunset = sunTime['sunset'].time()
+    sunrise = sunTime["sunrise"].time()
+    currentTime = datetime.now().time()
+    log(f'[IsNight] The current time is {currentTime}')
+    log(f'[IsNight] Sunset is at {sunset}')
+    log(f'[IsNight] Sunrise is at {sunrise}')
+    if debugNight:
+        log(f'[IsNight] Debug Override')
+        log(f'[IsNight] Output: {True}')
+        log(f'[IsNight] ----------------------------------------------------------------------------------------')
         return True
+    if currentTime >= sunset or currentTime <= sunrise:
+        log(f'[IsNight] Output: {True}')
+        log(f'[IsNight] ----------------------------------------------------------------------------------------')
+        return True
+    log(f'[IsNight] ----------------------------------------------------------------------------------------')
+    log(f'[IsNight] Output: {False}')
+    return False
 
 
 def ImageFilter(x, y, data):
+    FileType = (data['url_overridden_by_dest'].split('/')[-1]).split('.')[-1]
+    FileID = (data['url_overridden_by_dest'].split('/')[-1]).split('.')[-2]
+    ExistCheckActive = os.path.join(s["active-path"], data['url_overridden_by_dest'].split('/')[-1])
+    ExistCheckDownload = os.path.join(s["downloaded-path"], data['url_overridden_by_dest'].split('/')[-1])
+    log(f'[ImageFilter] ----------------------------------------NEW IMAGE-----------------------------------')
+    log(f'[ImageFilter][New Filter] FileType: {FileType}')
+    log(f'[ImageFilter][New Filter] FileID: {FileID}')
+
     if not x > y:
+        log(f'[ImageFilter][Landscape Check] Failed for {FileID}')
+        log(f'[ImageFilter] ------------------------------------------------------------------------------------')
         return False
     if not x >= s["monitor-x"]:
+        log(f'[ImageFilter][Resolution Check - X] Failed for {FileID}')
+        log(f'[ImageFilter][Resolution Check - X] Got {x}')
+        log(f'[ImageFilter] ------------------------------------------------------------------------------------')
         return False
     if not y >= s["monitor-y"]:
+        log(f'[ImageFilter][Resolution Check - Y] Failed for {FileID}')
+        log(f'[ImageFilter][Resolution Check - Y] Got {y}')
+        log(f'[ImageFilter] ------------------------------------------------------------------------------------')
+        return False
+    if FileType != 'jpeg' and FileType != 'png' and FileType != 'jpg':
+        log(f'[ImageFilter][File Type Check] Failed for {FileID}')
+        log(f'[ImageFilter][File Type Check] Got {FileType}')
+        log(f'[ImageFilter] ------------------------------------------------------------------------------------')
+        return False
+    if s["diff-bg"] and (os.path.exists(ExistCheckActive) or os.path.exists(ExistCheckDownload)):
+        log(f'[ImageFilter][File Exists Check] Failed for {FileID}')
+        log(f'[ImageFilter] ------------------------------------------------------------------------------------')
         return False
     for v in s["blacklist"]:
-        if v in data['id'] or v in data['url_overridden_by_dest']:
+        if FileID == v:
+            log(f'[ImageFilter] Blacklist Check Failed for {FileID}')
+            log(f'[ImageFilter] ------------------------------------------------------------------------------------')
             return False
-    if s["diff-bg"] and os.path.exists(
-            os.getcwd() + "\\Downloaded-Images\\" + data['url_overridden_by_dest'].split('/')[-1]):
-        return False
-
+    log(f'[ImageFilter][Filter Passed] {FileID} Passed Checks.')
+    log(f'[ImageFilter] ------------------------------------------------------------------------------------')
     return True
 
 
-def FetchRedditImage(j):
+def DownloadImage(url, FileName):
+    PathDownloaded = os.path.join(s["downloaded-path"], FileName)
+    PathActive = os.path.join(s['active-path'], FileName)
+    log(f'[DownloadImage] ---------------------------------------NEW IMAGE----------------------------------')
+    log('[DownloadImage] Running')
+    if os.path.exists(PathDownloaded):
+        log(f'[DownloadImage] Output: {PathDownloaded}')
+        log(f'[DownloadImage] Exists: {True}')
+        log(f'[DownloadImage] ----------------------------------------------------------------------------------')
+        return PathDownloaded, True
+    if os.path.exists(PathActive):
+        log(f'[DownloadImage] Output: {PathActive}')
+        log(f'[DownloadImage] Exists: {True}')
+        log(f'[DownloadImage] ----------------------------------------------------------------------------------')
+        return PathActive, True
+    log(f'[DownloadImage] Action: Downloading Image from {url}')
+    urllib.request.urlretrieve(url, PathDownloaded)
+    log(f'[DownloadImage] Output: {PathDownloaded}')
+    log(f'[DownloadImage] Exists: {False}')
+    log(f'[DownloadImage] ----------------------------------------------------------------------------------')
+    return PathDownloaded, False
+
+
+def FetchImageFromDirectory():
+    log('[FetchImageFromDirectory] Running')
+    FileName = random.choice(os.listdir(s["custom-path"]))
+    Path = s['custom-path'] + FileName
+    log(f'[FetchImageFromDirectory] Output: {Path}')
+    return Path
+
+
+def FetchImageFromLink():
+    log('[FetchImageFromLink] Running')
+    ChosenLink = random.choice(s['night-backgrounds']['methods']['links'])
+    FileName = ChosenLink.split('/')[-1]
+    Path, Exists = DownloadImage(ChosenLink, FileName)
+    log(f'[FetchImageFromLink] Output: {Path} [{ChosenLink}]')
+    log(f'[FetchImageFromLink] Exists: {Exists}')
+    return Path, Exists, ChosenLink
+
+
+def FetchImageFromReddit(j):
+    log('[FetchImageFromReddit] Running')
     url = None
     current = 0
     searchLimit = len(j['data']['children'])
 
+    log(f'[FetchImageFromReddit] Starting File Search for Image with Correct Parameters')
     while not url:
         Data = j['data']['children'][current]['data']
         try:
@@ -76,60 +188,94 @@ def FetchRedditImage(j):
             if ImageFilter(img['width'], img['height'], Data):
                 url = FoundURL
             else:
-                current += 1
+                current = current + 1
         except:
-            current += 1
+            current = current + 1
 
+        log(f'[FetchImageFromReddit] Current: {current}')
         if current >= searchLimit:
             url = j['data']['children'][0]['data']['url_overridden_by_dest']
 
-    Path = os.getcwd() + '\\Downloaded-Images\\' + url.split('/')[-1]
-    if os.path.exists(Path):
-        return Path, Data, True
-    urllib.request.urlretrieve(url, Path)
-    try:
-        image = Image.open(Path)
-        image.format
-    except:
-        return "No Image Found in the Correct Format. - Recommended to use a difference subreddit.", Data, False
-    return Path, Data, False
+    FileName = url.split('/')[-1]
+    Path, Exists = DownloadImage(url, FileName)
+    log(f'[FetchImageFromReddit] ---------------------------IMAGE DETAILS-----------------------------------')
+    log(f'[FetchImageFromReddit] FileName: {FileName}')
+    log(f'[FetchImageFromReddit] Path: {Path}')
+    log(f'[FetchImageFromReddit] Link: {url} | Permanent: https://reddit.com{Data["permalink"]}')
+    log(f'[FetchImageFromReddit] Output: Image Path ({Path}), File Exists ({Exists}), ImageData')
+    log(f'[FetchImageFromReddit] ---------------------------------------------------------------------------')
+    return Path, Exists, Data
 
 
-def FetchImage(method):
-    Path = None
-    url = None
-    if method == "local" and os.path.exists('Custom-Backgrounds') and s["night-backgrounds"]["methods"]["local"]:
-        FileName = random.choice(os.listdir("Custom-Backgrounds"))
-        Path = os.getcwd() + '\\Custom-Backgrounds\\' + FileName
-        url = False
-    elif method == "link" and s["night-backgrounds"]["methods"]["links"]:
-        url = random.choice(s["night-backgrounds"]["links"])
-        Path = os.getcwd() + '\\Downloaded-Images\\' + url.split('/')[-1]
-        if os.path.exists(Path):
-            return Path, url
-        urllib.request.urlretrieve(url, Path)
-    elif method == "subreddit" and s["night-backgrounds"]["methods"]["subreddits"]:
-        Path, data, exists = FetchRedditImage(jsonFetch(random.choice(s["night-backgrounds"]["methods"]["subreddits"])))
-        url = f"https://reddit.com{data['permalink']}"
-        if os.path.exists(Path):
-            return Path, url
-    elif method == "all":
-        methods = []
-        if s["night-backgrounds"]["methods"]["subreddits"]:
-            methods.append("subreddit")
-        elif s["night-backgrounds"]["methods"]["links"]:
-            methods.append("link")
-        elif s["night-backgrounds"]["methods"]["local"] and os.path.exists('Custom-Backgrounds'):
-            methods.append("local")
+def FetchMethod(method):
+    if method.lower() == 'all':
+        methodList = []
+        if s['night-backgrounds']['methods']['links']: methodList.append('link')
+        if s['night-backgrounds']['methods']['subreddits']: methodList.append('subreddit')
+        if s['night-backgrounds']['methods']['local'] and os.listdir(s['custom-path']): methodList.append('local')
+        method = random.choice(methodList)
+    return method
 
-        RandomMethod = random.choice(methods)
-        Path, url = FetchImage(RandomMethod)
+
+def NightImageFetch(method):
+    log(f'[NightImageFetch] --------------------------------NIGHT IMAGE FETCH-------------------------------')
+    log('[NightImageFetch] Running')
+    log(f'[NightImageFetch] Method: {method}')
+    method = method.lower()
+    Path, Exists, Data, Title, Source, Link = False, False, False, False, False, False
+
+    if method == 'local':
+        Path = FetchImageFromDirectory()
+        Source = 'Custom Backgrounds'
+        Title = Path.split('\\')[-1]
+
+    if method == 'subreddit':
+        Path, Exists, Data = FetchImageFromReddit(jsonFetch(random.choice(s['night-backgrounds']['methods']['subreddits'])))
+        Source = Data['subreddit']
+        Title = Data['title']
+        Link = Data['url_overridden_by_dest']
+
+    if method == 'link':
+        Path, Exists, Data = FetchImageFromLink()
+        Source = (((Data.split('//')[-1]).split('/')[-2])[2:])
+        Title = Path.split('\\')[-1]
+        Link = Data
+
+    if debugNotify or (not Exists and s["night-backgrounds"]["notify"]):
+        Notify(f"New Background from {Source}", Title, Link, None, Path)
+
+    log(f'[NightImageFetch] --------------------------------------------------------------------------------')
+    log(f'[NightImageFetch] Output: {Path} [{Link}]')
+    log(f'[NightImageFetch] Exists: {Exists}')
+    log(f'[NightImageFetch] --------------------------------------------------------------------------------')
+    return Path, Exists, Data
+
+
+def IsCurrentBackground(Path):
+    log(f'[IsCurrentBackground] ----------------------------------NEW CHECK---------------------------------')
+    log('[IsCurrentBackground] Running')
+
+    if Path:
+        FileName = Path.split('\\')[-1]
+        for file in os.listdir(s['active-path']):
+            log(f'[IsCurrentBackground] Current File: {file}')
+            log(f'[IsCurrentBackground] Searching For: {FileName}')
+            if file != FileName:
+                shutil.move(os.path.join(s['active-path'], file), os.path.join(s['downloaded-path'], file))
+                log(f"[IsCurrentBackground] Moved {file} to Downloaded-Path from Active-Path")
+            else:
+                log(f"[IsCurrentBackground] {file} is the current active background.")
+                log(f'[IsCurrentBackground] ----------------------------------------------------------------------------')
+                return os.path.join(s['active-path'], file)
+
+        NewPath = os.path.join(s['active-path'], FileName)
+        shutil.move(Path, NewPath)
+        log(f"[IsCurrentBackground] Moved {FileName} to Active-Path from Downloaded-Path")
+        log(f'[IsCurrentBackground] ----------------------------------------------------------------------------')
+        return NewPath
     else:
-        return "No Method Selected, Please select a method in the configuration file.", url
-
-    try:
-        image = Image.open(Path)
-        image.format
-    except:
-        return "No Image Found in the Correct Format - Please check your links or your Custom-Backgrounds directory.", url
-    return Path, url
+        for file in os.listdir(s['active-path']):
+            log(f'[IsCurrentBackground] Current File: {file}')
+            shutil.move(os.path.join(s['active-path'], file), os.path.join(s['downloaded-path'], file))
+            log(f"[IsCurrentBackground] Moved {file} to Downloaded-Path from Active-Path")
+        log(f'[IsCurrentBackground] ----------------------------------------------------------------------------')

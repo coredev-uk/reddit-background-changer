@@ -11,6 +11,10 @@ from config import SETTINGS as s, debugNotify
 def setup():
     if not os.path.exists(s['downloaded-path']):
         os.makedirs(s['downloaded-path'])
+    if not os.path.exists(s['custom-path']):
+        os.makedirs(s['custom-path'])
+    if not os.path.exists(s['active-path']):
+        os.makedirs(s['active-path'])
     if not s["night-backgrounds"]["methods"]["links"] and not os.path.exists(s['custom-path']):
         os.makedirs(s['custom-path'])
     if not s["monitor-x"]:

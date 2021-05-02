@@ -7,12 +7,12 @@ SETTINGS = {
     "monitor-x": "",
     "monitor-y": "",
     "night-backgrounds": {
-        "toggle": False,
+        "toggle": True,
         "diff-bg": False,
         "methods": {
             "chosen-method": "All", # Link / Local / SubReddit / All
             "links": [],
-            "subreddits": ['SpacePorn'],
+            "subreddits": ['SpacePorn', 'Wallpapers'],
             "local": True,
         },
         "city": 'London',

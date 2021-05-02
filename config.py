@@ -7,7 +7,8 @@ SETTINGS = {
     "monitor-x": "",
     "monitor-y": "",
     "night-backgrounds": {
-        "toggle": True,
+        "toggle": False,
+        "diff-bg": False,
         "methods": {
             "chosen-method": "All", # Link / Local / SubReddit / All
             "links": [],
@@ -15,7 +16,7 @@ SETTINGS = {
             "local": True,
         },
         "city": 'London',
-        "notify": True
+        "notify": False
     },
     "downloaded-path": os.getcwd() + "\\img\\bg_Downloaded\\",
     "custom-path": os.getcwd() + "\\img\\bg_Custom\\",

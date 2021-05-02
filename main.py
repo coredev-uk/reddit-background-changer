@@ -24,6 +24,12 @@ def setup():
 
 
 def main():
+    Files = []
+    Current_Background = None
+    for file in os.listdir(s['active-path']):
+        Files.append(file)
+    if len(Files) == 1:
+        Current_Background = Files[0]
     Custom = False
     if f.IsNight(s["night-backgrounds"]["city"]):
         # Night Background Fetch
@@ -33,7 +39,7 @@ def main():
         Path, Exists, Data = f.NightImageFetch(Method)
     else:
         # Reddit Background Fetch
-        Path, Exists, Data = f.FetchImageFromReddit(f.jsonFetch(random.choice(s['subreddits'])))
+        Path, Exists, Data = f.FetchImageFromReddit(f.jsonFetch(random.choice(s['subreddits'])), False)
         if debugNotify or not Exists:
             f.Notify(f"New Background from {Data['subreddit']}", f"{Data['title']}", Data['url_overridden_by_dest'],
                      "bin/reddit.ico", False)
@@ -42,7 +48,9 @@ def main():
         Path = f.IsCurrentBackground(Path)
     else:
         f.IsCurrentBackground(False)
-    f.log(f'[main] Setting background as {Path}')
+    FileName = Path.split('\\')[-1]
+    if len(Files) == 1: f.log(f'[main] Old Background: {Files[0]}')
+    f.log(f'[main] New Background: {FileName}')
     ctypes.windll.user32.SystemParametersInfoW(20, 0, Path, 0)
 
 

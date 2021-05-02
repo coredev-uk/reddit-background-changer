@@ -90,7 +90,7 @@ def IsNight(city):
     return False
 
 
-def ImageFilter(x, y, data):
+def ImageFilter(x, y, data, night):
     FileType = (data['url_overridden_by_dest'].split('/')[-1]).split('.')[-1]
     FileID = (data['url_overridden_by_dest'].split('/')[-1]).split('.')[-2]
     ExistCheckActive = os.path.join(s["active-path"], data['url_overridden_by_dest'].split('/')[-1])
@@ -118,7 +118,7 @@ def ImageFilter(x, y, data):
         log(f'[ImageFilter][File Type Check] Got {FileType}')
         log(f'[ImageFilter] ------------------------------------------------------------------------------------')
         return False
-    if s["diff-bg"] and (os.path.exists(ExistCheckActive) or os.path.exists(ExistCheckDownload)):
+    if (s["diff-bg"] or (night and s["night-backgrounds"]["diff-bg"])) and (os.path.exists(ExistCheckActive) or os.path.exists(ExistCheckDownload)):
         log(f'[ImageFilter][File Exists Check] Failed for {FileID}')
         log(f'[ImageFilter] ------------------------------------------------------------------------------------')
         return False
@@ -173,7 +173,7 @@ def FetchImageFromLink():
     return Path, Exists, ChosenLink
 
 
-def FetchImageFromReddit(j):
+def FetchImageFromReddit(j, Night):
     log('[FetchImageFromReddit] Running')
     url = None
     current = 0
@@ -185,7 +185,7 @@ def FetchImageFromReddit(j):
         try:
             img = Data['preview']['images'][0]['source']
             FoundURL = Data['url_overridden_by_dest']
-            if ImageFilter(img['width'], img['height'], Data):
+            if ImageFilter(img['width'], img['height'], Data, Night):
                 url = FoundURL
             else:
                 current = current + 1
@@ -230,7 +230,7 @@ def NightImageFetch(method):
         Title = Path.split('\\')[-1]
 
     if method == 'subreddit':
-        Path, Exists, Data = FetchImageFromReddit(jsonFetch(random.choice(s['night-backgrounds']['methods']['subreddits'])))
+        Path, Exists, Data = FetchImageFromReddit(jsonFetch(random.choice(s['night-backgrounds']['methods']['subreddits'])), True)
         Source = Data['subreddit']
         Title = Data['title']
         Link = Data['url_overridden_by_dest']
@@ -253,7 +253,7 @@ def NightImageFetch(method):
 
 def IsCurrentBackground(Path):
     log(f'[IsCurrentBackground] ----------------------------------NEW CHECK---------------------------------')
-    log('[IsCurrentBackground] Running')
+    log(f'[IsCurrentBackground] Running')
 
     if Path:
         FileName = Path.split('\\')[-1]

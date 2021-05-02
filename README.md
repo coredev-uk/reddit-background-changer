@@ -65,7 +65,7 @@ SETTINGS = {
 ## Task Scheduler Setup (Default Script)
 1. Open Task Scheduler either through typing `taskschd.msc` in run or in your start menu or through finding the application.
 2. Click on Task Scheduler Library and on the right it should say import task, click that.
-3. Navigate to your install of `reddit-background-changer` and open the `bin` folder. Click on the `rbc.xml` file and this should start the import process.
+3. Navigate to your install of `reddit-background-changer` and open the `bin` folder. Click on the `Reddit Background Changer.xml` file and this should start the import process.
 4. In this you will need to edit the action and set program/script to your `pythonw.exe` path. This would usually be somewhere like this `C:\Users\user\AppData\Local\Programs\Python\Python39\pythonw.exe` if you have a default installation. Copy that and paste it in the Program/script field making sure you keep the surrounding quotation.
 5. Then set the Start in field to where you have `reddit-background-changer` installed, and then you're pretty much done unless you'd like to change the default timing.
 6. If you want to change the timing then go to Triggers and edit the One time trigger and change the Repeat task every to however much you'd like.
@@ -74,7 +74,7 @@ SETTINGS = {
 This is just a script that cleans the downloaded image's directory. I added this as it means if an image is used twice across the week, there is a chance you could see it again. It also helps save space, instead of following below you could just run the script if you'd prefer. Its called `_Directory_Clear.py`.
 1. Open Task Scheduler either through typing `taskschd.msc` in run or in your start menu or through finding the application.
 2. Click on Task Scheduler Library and on the right it should say import task, click that.
-3. Navigate to your install of `reddit-background-changer` and open the `bin` folder. Click on the `rbc-dir-clean.xml` file and this should start the import process.
+3. Navigate to your install of `reddit-background-changer` and open the `bin` folder. Click on the `Reddit Background Changer (Directory Cleaner).xml` file and this should start the import process.
 4. Put your `pythonw.exe` path into the program/script, you can get this from the original script.
 5. Then change your Start in field to your install path of `reddit-background-changer` then you could adjust the timing again if you'd like but cleaning the directory once a day is my personal preference.
 

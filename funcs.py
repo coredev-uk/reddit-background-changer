@@ -9,6 +9,7 @@ import logging
 import shutil
 from datetime import datetime
 from config import SETTINGS as s, debug, debugNight, debugNotify
+from imgurpython import ImgurClient
 
 
 def logging_init():
@@ -165,7 +166,28 @@ def FetchImageFromDirectory():
 
 def FetchImageFromLink():
     log('[FetchImageFromLink] Running')
-    ChosenLink = random.choice(s['night-backgrounds']['methods']['links'])
+    linkList = s['night-backgrounds']['methods']['links']
+    client = ImgurClient(s["imgur"]["client_id"], s["imgur"]["client_secret"])
+    imgurAlbum = []
+    for value in linkList:
+        val = value.split(':')
+        if val[0] != 'http' or val[0] != 'https':
+            try:
+                a = client.get_album(value)
+                log(f'[FetchImageFromLink][ImgurAlbum] Found Album: {a.title}')
+                imgurAlbum.append(a.id)
+            except:
+                continue
+    current = 0
+    for v in imgurAlbum:
+        linkList.remove(v)
+        for image in client.get_album_images(v):
+            log(f'[FetchImageFromLink][ImgurAlbum] Adding {image.link} to Links list.')
+            linkList.append(image.link)
+            current = current + 1
+            if current >= s["imgur"]["album_max"]:
+                break
+    ChosenLink = random.choice(linkList)
     FileName = ChosenLink.split('/')[-1]
     Path, Exists = DownloadImage(ChosenLink, FileName)
     log(f'[FetchImageFromLink] Output: {Path} [{ChosenLink}]')

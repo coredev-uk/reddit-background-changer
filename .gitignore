@@ -118,3 +118,4 @@ dmypy.json
 img
 .DS_Store
 console.log
+config.py

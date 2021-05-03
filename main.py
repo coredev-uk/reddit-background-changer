@@ -41,7 +41,7 @@ def main():
         # Reddit Background Fetch
         Path, Exists, Data = f.FetchImageFromReddit(f.jsonFetch(random.choice(s['subreddits'])), False)
         if debugNotify or not Exists:
-            f.Notify(f"New Background from {Data['subreddit']}", f"{Data['title']}", Data['url_overridden_by_dest'],
+            f.Notify(f"New Background from {Data['subreddit']}", f"{Data['title']}", f'https://reddit.com{Data["permalink"]}',
                      "bin/reddit.ico", False)
 
     if not Custom:

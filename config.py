@@ -12,7 +12,7 @@ SETTINGS = {
         "methods": {
             "chosen-method": "All", # Link / Local / SubReddit / All
             "links": [],
-            "subreddits": ['SpacePorn', 'Wallpapers'],
+            "subreddits": ['SpacePorn'],
             "local": True,
         },
         "city": 'London',

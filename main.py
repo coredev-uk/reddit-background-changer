@@ -21,7 +21,12 @@ def setup():
         s["monitor-x"] = GetSystemMetrics(0)
     if not s["monitor-y"]:
         s["monitor-y"] = GetSystemMetrics(1)
-
+    for file in os.listdir(s['custom-path']):
+        FileTable = file.split('_')
+        if "custom" not in FileTable:
+            path = s['custom-path'] + file
+            newPath = s['custom-path'] + 'custom_' + file
+            os.rename(path, newPath)
 
 def main():
     Files = []
@@ -44,12 +49,9 @@ def main():
             f.Notify(f"New Background from {Data['subreddit']}", f"{Data['title']}", f'https://reddit.com{Data["permalink"]}',
                      "bin/reddit.ico", False)
 
-    if not Custom:
-        Path = f.IsCurrentBackground(Path)
-    else:
-        f.IsCurrentBackground(False)
+    Path = f.IsCurrentBackground(Path)
     FileName = Path.split('\\')[-1]
-    if len(Files) == 1: f.log(f'[main] Old Background: {Files[0]}')
+    f.log(f'[main] Old Background: {Current_Background}')
     f.log(f'[main] New Background: {FileName}')
     ctypes.windll.user32.SystemParametersInfoW(20, 0, Path, 0)
 

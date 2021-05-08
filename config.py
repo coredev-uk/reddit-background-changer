@@ -11,7 +11,7 @@ SETTINGS = {
         "diff-bg": False,
         "methods": {
             "chosen-method": "All", # Link / Local / SubReddit / All
-            "links": [],
+            "links": ["mX2ylFa"],
             "subreddits": ['SpacePorn'],
             "local": True,
         },
@@ -20,7 +20,12 @@ SETTINGS = {
     },
     "downloaded-path": os.getcwd() + "\\img\\bg_Downloaded\\",
     "custom-path": os.getcwd() + "\\img\\bg_Custom\\",
-    "active-path": os.getcwd() + "\\img\\bg_Active\\"
+    "active-path": os.getcwd() + "\\img\\bg_Active\\",
+    "imgur": {
+        "client_id": "9c4b28eafcac8d6",
+        "client_secret": "0772f72d14f6028095dc99f427135886f2d593ba",
+        "album_max": 25
+    }
 }
 
 # dont touch this

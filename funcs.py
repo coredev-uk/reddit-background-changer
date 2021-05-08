@@ -172,6 +172,7 @@ def FetchImageFromLink():
     for value in linkList:
         val = value.split(':')
         if val[0] != 'http' or val[0] != 'https':
+            linkList.remove(value)
             try:
                 a = client.get_album(value)
                 log(f'[FetchImageFromLink][ImgurAlbum] Found Album: {a.title}')
@@ -180,7 +181,6 @@ def FetchImageFromLink():
                 continue
     current = 0
     for v in imgurAlbum:
-        linkList.remove(v)
         for image in client.get_album_images(v):
             log(f'[FetchImageFromLink][ImgurAlbum] Adding {image.link} to Links list.')
             linkList.append(image.link)
@@ -276,28 +276,27 @@ def NightImageFetch(method):
 def IsCurrentBackground(Path):
     log(f'[IsCurrentBackground] ----------------------------------NEW CHECK---------------------------------')
     log(f'[IsCurrentBackground] Running')
-
-    if Path:
-        FileName = Path.split('\\')[-1]
-        for file in os.listdir(s['active-path']):
-            log(f'[IsCurrentBackground] Current File: {file}')
-            log(f'[IsCurrentBackground] Searching For: {FileName}')
-            if file != FileName:
+    FileName = Path.split('\\')[-1]
+    for file in os.listdir(s['active-path']):
+        log(f'[IsCurrentBackground] Current File: {file}')
+        log(f'[IsCurrentBackground] Searching For: {FileName}')
+        if file != FileName:
+            if "custom" in file.split('_'):
+                shutil.move(os.path.join(s['active-path'], file), os.path.join(s['custom-path'], file))
+                log(f"[IsCurrentBackground] Moved {file} to Custom-Path from Active-Path")
+            else:
                 shutil.move(os.path.join(s['active-path'], file), os.path.join(s['downloaded-path'], file))
                 log(f"[IsCurrentBackground] Moved {file} to Downloaded-Path from Active-Path")
-            else:
-                log(f"[IsCurrentBackground] {file} is the current active background.")
-                log(f'[IsCurrentBackground] ----------------------------------------------------------------------------')
-                return os.path.join(s['active-path'], file)
+        else:
+            log(f"[IsCurrentBackground] {file} is the current active background.")
+            log(f'[IsCurrentBackground] ----------------------------------------------------------------------------')
+            return os.path.join(s['active-path'], file)
 
-        NewPath = os.path.join(s['active-path'], FileName)
-        shutil.move(Path, NewPath)
-        log(f"[IsCurrentBackground] Moved {FileName} to Active-Path from Downloaded-Path")
-        log(f'[IsCurrentBackground] ----------------------------------------------------------------------------')
-        return NewPath
+    NewPath = os.path.join(s['active-path'], FileName)
+    shutil.move(Path, NewPath)
+    if "custom" in FileName.split('_'):
+        log(f"[IsCurrentBackground] Moved {FileName} to Active-Path from Custom-Path")
     else:
-        for file in os.listdir(s['active-path']):
-            log(f'[IsCurrentBackground] Current File: {file}')
-            shutil.move(os.path.join(s['active-path'], file), os.path.join(s['downloaded-path'], file))
-            log(f"[IsCurrentBackground] Moved {file} to Downloaded-Path from Active-Path")
-        log(f'[IsCurrentBackground] ----------------------------------------------------------------------------')
+        log(f"[IsCurrentBackground] Moved {FileName} to Active-Path from Downloaded-Path")
+    log(f'[IsCurrentBackground] ----------------------------------------------------------------------------')
+    return NewPath

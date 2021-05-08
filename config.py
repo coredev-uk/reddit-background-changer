@@ -22,8 +22,8 @@ SETTINGS = {
     "custom-path": os.getcwd() + "\\img\\bg_Custom\\",
     "active-path": os.getcwd() + "\\img\\bg_Active\\",
     "imgur": {
-        "client_id": "9c4b28eafcac8d6",
-        "client_secret": "0772f72d14f6028095dc99f427135886f2d593ba",
+        "client_id": "",
+        "client_secret": "",
         "album_max": 25
     }
 }

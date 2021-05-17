@@ -115,9 +115,10 @@ dmypy.json
 .pyre/
 
 # Custom
+.*
+__*
+
+# Dev
 img
-.DS_Store
 console.log
-config.py
-config.py
 config.py

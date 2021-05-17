@@ -167,26 +167,27 @@ def FetchImageFromDirectory():
 def FetchImageFromLink():
     log('[FetchImageFromLink] Running')
     linkList = s['night-backgrounds']['methods']['links']
-    client = ImgurClient(s["imgur"]["client_id"], s["imgur"]["client_secret"])
-    imgurAlbum = []
-    for value in linkList:
-        val = value.split(':')
-        if val[0] != 'http' or val[0] != 'https':
-            linkList.remove(value)
-            try:
-                a = client.get_album(value)
-                log(f'[FetchImageFromLink][ImgurAlbum] Found Album: {a.title}')
-                imgurAlbum.append(a.id)
-            except:
-                continue
-    current = 0
-    for v in imgurAlbum:
-        for image in client.get_album_images(v):
-            log(f'[FetchImageFromLink][ImgurAlbum] Adding {image.link} to Links list.')
-            linkList.append(image.link)
-            current = current + 1
-            if current >= s["imgur"]["album_max"]:
-                break
+    if (s["imgur"]["client_id"] and s["imgur"]["client_secret"]):
+        client = ImgurClient(s["imgur"]["client_id"], s["imgur"]["client_secret"])
+        imgurAlbum = []
+        for value in linkList:
+            val = value.split(':')
+            if val[0] != 'http' or val[0] != 'https':
+                linkList.remove(value)
+                try:
+                    a = client.get_album(value)
+                    log(f'[FetchImageFromLink][ImgurAlbum] Found Album: {a.title}')
+                    imgurAlbum.append(a.id)
+                except:
+                    continue
+        current = 0
+        for v in imgurAlbum:
+            for image in client.get_album_images(v):
+                log(f'[FetchImageFromLink][ImgurAlbum] Adding {image.link} to Links list.')
+                linkList.append(image.link)
+                current = current + 1
+                if current >= s["imgur"]["album_max"]:
+                    break
     ChosenLink = random.choice(linkList)
     FileName = ChosenLink.split('/')[-1]
     Path, Exists = DownloadImage(ChosenLink, FileName)

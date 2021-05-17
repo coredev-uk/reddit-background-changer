@@ -29,6 +29,6 @@ SETTINGS = {
 }
 
 # dont touch this
-debug = True
+debug = False
 debugNotify = False
-debugNight = True
+debugNight = False

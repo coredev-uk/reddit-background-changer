@@ -49,7 +49,7 @@ SETTINGS = {
 ## Task Scheduler Setup
 1. Open `taskschd.msc` and on the right panel there is an option to **Import Task**, click that.
 2. Navigate to your Reddit-Background-Changer install and go into the bin folder.
-3. Click on `Reddit Background Changer.xml` and this shoudl open a prompt in Task Scheduler.
+3. Click on `Reddit Background Changer.xml` and this should open a prompt in Task Scheduler.
 4. In this prompt you need to go to **Actions** and edit the 'Start a program' action.
 5. All you need to do is change the 'Start in' box to the path of your reddit-background-changer install (I.e. C:\Users\%LOCALUSER%\Downloads)
 *You can repeat all the previous if you wish to use the directory cleaner (this just wipes the images daily to optimise storage) as well.*

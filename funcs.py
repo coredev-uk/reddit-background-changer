@@ -173,11 +173,11 @@ def FetchImageFromLink():
         for value in linkList:
             val = value.split(':')
             if val[0] != 'http' or val[0] != 'https':
-                linkList.remove(value)
                 try:
                     a = client.get_album(value)
                     log(f'[FetchImageFromLink][ImgurAlbum] Found Album: {a.title}')
                     imgurAlbum.append(a.id)
+                    linkList.remove(value)
                 except:
                     continue
         current = 0
@@ -231,7 +231,8 @@ def FetchImageFromReddit(j, Night):
 
 
 def FetchMethod(method):
-    if method.lower() == 'all':
+    method = method.lower()
+    if method == 'all':
         methodList = []
         if s['night-backgrounds']['methods']['links']: methodList.append('link')
         if s['night-backgrounds']['methods']['subreddits']: methodList.append('subreddit')
@@ -244,7 +245,6 @@ def NightImageFetch(method):
     log(f'[NightImageFetch] --------------------------------NIGHT IMAGE FETCH-------------------------------')
     log('[NightImageFetch] Running')
     log(f'[NightImageFetch] Method: {method}')
-    method = method.lower()
     Path, Exists, Data, Title, Source, Link = False, False, False, False, False, False
 
     if method == 'local':

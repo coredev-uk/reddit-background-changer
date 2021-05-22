@@ -39,7 +39,7 @@ def main():
     if f.IsNight(s["night-backgrounds"]["city"]):
         # Night Background Fetch
         Method = f.FetchMethod(s["night-backgrounds"]["methods"]["chosen-method"])
-        if Method.lower() == 'local':
+        if Method == 'local':
             Custom = True
         Path, Exists, Data = f.NightImageFetch(Method)
     else:

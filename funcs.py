@@ -64,7 +64,7 @@ def Notify(msg, title, link, icon, path):
 
 
 def IsNight(city):
-    if not s["night-backgrounds"]["toggle"]: return False
+    if not s['night-backgrounds']['toggle']: return False
     from astral.sun import sun
     from astral import LocationInfo
     log(f'[IsNight] ----------------------------------------------------------------------------------------')
@@ -72,7 +72,7 @@ def IsNight(city):
     city = LocationInfo(city)
     sunTime = sun(city.observer, date=datetime.now())
     sunset = sunTime['sunset'].time()
-    sunrise = sunTime["sunrise"].time()
+    sunrise = sunTime['sunrise'].time()
     currentTime = datetime.now().time()
     log(f'[IsNight] The current time is {currentTime}')
     log(f'[IsNight] Sunset is at {sunset}')
@@ -94,8 +94,8 @@ def IsNight(city):
 def ImageFilter(x, y, data, night):
     FileType = (data['url_overridden_by_dest'].split('/')[-1]).split('.')[-1]
     FileID = (data['url_overridden_by_dest'].split('/')[-1]).split('.')[-2]
-    ExistCheckActive = os.path.join(s["active-path"], data['url_overridden_by_dest'].split('/')[-1])
-    ExistCheckDownload = os.path.join(s["downloaded-path"], data['url_overridden_by_dest'].split('/')[-1])
+    ExistCheckActive = os.path.join(s['active-path'], data['url_overridden_by_dest'].split('/')[-1])
+    ExistCheckDownload = os.path.join(s['downloaded-path'], data['url_overridden_by_dest'].split('/')[-1])
     log(f'[ImageFilter] ----------------------------------------NEW IMAGE-----------------------------------')
     log(f'[ImageFilter][New Filter] FileType: {FileType}')
     log(f'[ImageFilter][New Filter] FileID: {FileID}')
@@ -104,12 +104,12 @@ def ImageFilter(x, y, data, night):
         log(f'[ImageFilter][Landscape Check] Failed for {FileID}')
         log(f'[ImageFilter] ------------------------------------------------------------------------------------')
         return False
-    if not x >= s["monitor-x"]:
+    if not x >= s['monitor-x']:
         log(f'[ImageFilter][Resolution Check - X] Failed for {FileID}')
         log(f'[ImageFilter][Resolution Check - X] Got {x}')
         log(f'[ImageFilter] ------------------------------------------------------------------------------------')
         return False
-    if not y >= s["monitor-y"]:
+    if not y >= s['monitor-y']:
         log(f'[ImageFilter][Resolution Check - Y] Failed for {FileID}')
         log(f'[ImageFilter][Resolution Check - Y] Got {y}')
         log(f'[ImageFilter] ------------------------------------------------------------------------------------')
@@ -119,11 +119,11 @@ def ImageFilter(x, y, data, night):
         log(f'[ImageFilter][File Type Check] Got {FileType}')
         log(f'[ImageFilter] ------------------------------------------------------------------------------------')
         return False
-    if (s["diff-bg"] or (night and s["night-backgrounds"]["diff-bg"])) and (os.path.exists(ExistCheckActive) or os.path.exists(ExistCheckDownload)):
+    if (s['diff-bg'] or (night and s['night-backgrounds']['diff-bg'])) and (os.path.exists(ExistCheckActive) or os.path.exists(ExistCheckDownload)):
         log(f'[ImageFilter][File Exists Check] Failed for {FileID}')
         log(f'[ImageFilter] ------------------------------------------------------------------------------------')
         return False
-    for v in s["blacklist"]:
+    for v in s['blacklist']:
         if FileID == v:
             log(f'[ImageFilter] Blacklist Check Failed for {FileID}')
             log(f'[ImageFilter] ------------------------------------------------------------------------------------')
@@ -134,7 +134,7 @@ def ImageFilter(x, y, data, night):
 
 
 def DownloadImage(url, FileName):
-    PathDownloaded = os.path.join(s["downloaded-path"], FileName)
+    PathDownloaded = os.path.join(s['downloaded-path'], FileName)
     PathActive = os.path.join(s['active-path'], FileName)
     log(f'[DownloadImage] ---------------------------------------NEW IMAGE----------------------------------')
     log('[DownloadImage] Running')
@@ -158,7 +158,7 @@ def DownloadImage(url, FileName):
 
 def FetchImageFromDirectory():
     log('[FetchImageFromDirectory] Running')
-    FileName = random.choice(os.listdir(s["custom-path"]))
+    FileName = random.choice(os.listdir(s['custom-path']))
     Path = s['custom-path'] + FileName
     log(f'[FetchImageFromDirectory] Output: {Path}')
     return Path
@@ -167,8 +167,8 @@ def FetchImageFromDirectory():
 def FetchImageFromLink():
     log('[FetchImageFromLink] Running')
     linkList = s['night-backgrounds']['methods']['links']
-    if (s["imgur"]["client_id"] and s["imgur"]["client_secret"]):
-        client = ImgurClient(s["imgur"]["client_id"], s["imgur"]["client_secret"])
+    if (s['imgur']['client_id'] and s['imgur']['client_secret']):
+        client = ImgurClient(s['imgur']['client_id'], s['imgur']['client_secret'])
         imgurAlbum = []
         for value in linkList:
             val = value.split(':')
@@ -186,7 +186,7 @@ def FetchImageFromLink():
                 log(f'[FetchImageFromLink][ImgurAlbum] Adding {image.link} to Links list.')
                 linkList.append(image.link)
                 current = current + 1
-                if current >= s["imgur"]["album_max"]:
+                if current >= s['imgur']['album_max']:
                     break
     ChosenLink = random.choice(linkList)
     FileName = ChosenLink.split('/')[-1]
@@ -270,7 +270,7 @@ def NightImageFetch(method):
         Title = Path.split('\\')[-1]
         Link = Data
 
-    if debugNotify or (not Exists and s["night-backgrounds"]["notify"]):
+    if debugNotify or (not Exists and s['night-backgrounds']['notify']):
         Notify(f"New Background from {Source}", Title, Link, None, Path)
 
     log(f'[NightImageFetch] --------------------------------------------------------------------------------')

@@ -5,7 +5,7 @@ import os
 import random
 import funcs as f
 from win32api import GetSystemMetrics
-from config import SETTINGS as s, debugNotify
+from config import SETTINGS as s
 
 
 def setup():
@@ -29,25 +29,11 @@ def setup():
             os.rename(path, newPath)
 
 def main():
-    Files = []
-    Current_Background = None
-    for file in os.listdir(s['active-path']):
-        Files.append(file)
-    if len(Files) == 1:
-        Current_Background = Files[0]
-    Custom = False
+    Current_Background = f.GetCurrentBackground(s['active-path'])
     if f.IsNight(s["night-backgrounds"]["city"]):
-        # Night Background Fetch
-        Method = f.FetchMethod(s["night-backgrounds"]["methods"]["chosen-method"])
-        if Method == 'local':
-            Custom = True
-        Path, Exists, Data = f.NightImageFetch(Method)
+        Path = f.NightImageFetch(f.FetchMethod(s["night-backgrounds"]["methods"]["chosen-method"])) # Night Background Fetch
     else:
-        # Reddit Background Fetch
-        Path, Exists, Data = f.FetchImageFromReddit(f.jsonFetch(random.choice(s['subreddits'])), False)
-        if debugNotify or not Exists:
-            f.Notify(f"New Background from {Data['subreddit']}", f"{Data['title']}", f'https://reddit.com{Data["permalink"]}',
-                     "bin/reddit.ico", False)
+        Path = f.FetchImageFromReddit(f.jsonFetch(random.choice(s['subreddits'])), False) # Reddit Background Fetch
 
     Path = f.IsCurrentBackground(Path)
     FileName = Path.split('\\')[-1]

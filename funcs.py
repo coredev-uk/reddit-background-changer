@@ -220,14 +220,20 @@ def FetchImageFromReddit(j, Night):
             url = j['data']['children'][0]['data']['url_overridden_by_dest']
 
     FileName = url.split('/')[-1]
+
     Path, Exists = DownloadImage(url, FileName)
+
+    if debugNotify or (not Exists and s['notify']):
+        Notify(f"New Background from {Data['subreddit']}", f"{Data['title']}", f'https://reddit.com{Data["permalink"]}',
+                "bin/reddit.ico", False)
+    
     log(f'[FetchImageFromReddit] ---------------------------IMAGE DETAILS-----------------------------------')
     log(f'[FetchImageFromReddit] FileName: {FileName}')
     log(f'[FetchImageFromReddit] Path: {Path}')
     log(f'[FetchImageFromReddit] Link: {url} | Permanent: https://reddit.com{Data["permalink"]}')
     log(f'[FetchImageFromReddit] Output: Image Path ({Path}), File Exists ({Exists}), ImageData')
     log(f'[FetchImageFromReddit] ---------------------------------------------------------------------------')
-    return Path, Exists, Data
+    return Path
 
 
 def FetchMethod(method):
@@ -271,7 +277,7 @@ def NightImageFetch(method):
     log(f'[NightImageFetch] Output: {Path} [{Link}]')
     log(f'[NightImageFetch] Exists: {Exists}')
     log(f'[NightImageFetch] --------------------------------------------------------------------------------')
-    return Path, Exists, Data
+    return Path
 
 
 def IsCurrentBackground(Path):
@@ -301,3 +307,11 @@ def IsCurrentBackground(Path):
         log(f"[IsCurrentBackground] Moved {FileName} to Active-Path from Downloaded-Path")
     log(f'[IsCurrentBackground] ----------------------------------------------------------------------------')
     return NewPath
+
+
+def GetCurrentBackground(activePath):
+    Files = []
+    for f in os.listdir(activePath):
+        Files.append(f)
+    if len(Files) == 1:
+        return Files[0]

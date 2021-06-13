@@ -113,23 +113,34 @@ def ImageFilter(x, y, data, night):
 
     if not x > y:
         log(f'[ImageFilter][Landscape Check] Failed for {FileID}')
+        log(f'[ImageFilter][Landscape Check] Got {x}x{y}')
         log(f'[ImageFilter] ------------------------------------------------------------------------------------')
         return False
-    if not x >= s['monitor-x']:
+    if not x >= s['res']['monitor-x']:
         log(f'[ImageFilter][Resolution Check - X] Failed for {FileID}')
-        log(f'[ImageFilter][Resolution Check - X] Got {x}')
+        log(f'[ImageFilter][Resolution Check - X] Got {x} | Needed {s["res"]["monitor-x"]}')
         log(f'[ImageFilter] ------------------------------------------------------------------------------------')
         return False
-    if not y >= s['monitor-y']:
+    if not y >= s['res']['monitor-y']:
         log(f'[ImageFilter][Resolution Check - Y] Failed for {FileID}')
-        log(f'[ImageFilter][Resolution Check - Y] Got {y}')
+        log(f'[ImageFilter][Resolution Check - Y] Got {y} | Needed {s["res"]["monitor-y"]}')
         log(f'[ImageFilter] ------------------------------------------------------------------------------------')
         return False
-    if calculate_aspect(x, y) != s['aspect-ratio']:
+    if calculate_aspect(x, y) != s['res']['aspect-ratio']:
         log(f'[ImageFilter][Aspect Ratio Check] Failed for {FileID}')
-        log(f'[ImageFilter][Aspect Ratio Check] Got {calculate_aspect(x, y)}')
+        log(f'[ImageFilter][Aspect Ratio Check] Got {calculate_aspect(x, y)} | Needed {s["res"]["aspect-ratio"]}')
         log(f'[ImageFilter] ------------------------------------------------------------------------------------')
         return False
+    if x >= s['res']['max-x']:
+        log(f'[ImageFilter][Max Resolution Check - X] Failed for {FileID}')
+        log(f'[ImageFilter][Max Resolution Check - X] Got {x} | Needed {s["res"]["max-x"]}')
+        log(f'[ImageFilter] ------------------------------------------------------------------------------------')
+        return False
+    if y >= s['res']['max-y']:
+      log(f'[ImageFilter][Max Resolution Check - Y] Failed for {FileID}')
+      log(f'[ImageFilter][Max Resolution Check - Y] Got {y} | Needed {s["res"]["max-y"]}')
+      log(f'[ImageFilter] ------------------------------------------------------------------------------------')
+      return False
     if FileType != 'jpeg' and FileType != 'png' and FileType != 'jpg':
         log(f'[ImageFilter][File Type Check] Failed for {FileID}')
         log(f'[ImageFilter][File Type Check] Got {FileType}')
@@ -218,7 +229,7 @@ def FetchImageFromReddit(j, Night):
     current = 0
     searchLimit = len(j['data']['children'])
 
-    log(f'[FetchImageFromReddit] Starting File Search for Image with Correct Parameters')
+    log(f'[FetchImageFromReddit] Starting File Search for Image with Correct Parameters. SearchLimit: {searchLimit}')
     while not url:
         Data = j['data']['children'][current]['data']
         try:
@@ -233,6 +244,7 @@ def FetchImageFromReddit(j, Night):
 
         log(f'[FetchImageFromReddit] Current: {current}')
         if current >= searchLimit:
+            log('[FetchImageFromReddit] Exceeded searchLimit - 1st Image being set as background.')
             url = j['data']['children'][0]['data']['url_overridden_by_dest']
 
     FileName = url.split('/')[-1]

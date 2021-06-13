@@ -21,6 +21,8 @@ def setup():
         s['monitor-x'] = GetSystemMetrics(0)
     if not s['monitor-y']:
         s['monitor-y'] = GetSystemMetrics(1)
+    if not s['aspect-ratio']:
+        s['aspect-ratio'] = f.calculate_aspect(s['monitor-x'], s['monitor-y'])
     for file in os.listdir(s['custom-path']):
         FileTable = file.split('_')
         if "custom" not in FileTable:

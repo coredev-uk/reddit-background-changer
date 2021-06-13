@@ -11,6 +11,17 @@ from datetime import datetime
 from config import SETTINGS as s, debug, debugNight, debugNotify
 from imgurpython import ImgurClient
 
+def calculate_aspect(width: int, height: int) -> str:
+    def gcd(a, b):
+        """The GCD (greatest common divisor) is the highest number that evenly divides both width and height."""
+        return a if b == 0 else gcd(b, a % b)
+
+    r = gcd(width, height)
+    x = int(width / r)
+    y = int(height / r)
+
+    return f"{x}:{y}"
+
 
 def logging_init():
     if debug:
@@ -112,6 +123,11 @@ def ImageFilter(x, y, data, night):
     if not y >= s['monitor-y']:
         log(f'[ImageFilter][Resolution Check - Y] Failed for {FileID}')
         log(f'[ImageFilter][Resolution Check - Y] Got {y}')
+        log(f'[ImageFilter] ------------------------------------------------------------------------------------')
+        return False
+    if calculate_aspect(x, y) != s['aspect-ratio']:
+        log(f'[ImageFilter][Aspect Ratio Check] Failed for {FileID}')
+        log(f'[ImageFilter][Aspect Ratio Check] Got {calculate_aspect(x, y)}')
         log(f'[ImageFilter] ------------------------------------------------------------------------------------')
         return False
     if FileType != 'jpeg' and FileType != 'png' and FileType != 'jpg':

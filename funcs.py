@@ -11,18 +11,6 @@ from datetime import datetime
 from config import SETTINGS as s, debug, debugNight, debugNotify
 from imgurpython import ImgurClient
 
-def calculate_aspect(width: int, height: int) -> str:
-    def gcd(a, b):
-        """The GCD (greatest common divisor) is the highest number that evenly divides both width and height."""
-        return a if b == 0 else gcd(b, a % b)
-
-    r = gcd(width, height)
-    x = int(width / r)
-    y = int(height / r)
-
-    return f"{x}:{y}"
-
-
 def logging_init():
     if debug:
         logging.basicConfig(filename='console.log', level=logging.DEBUG)  # Setup logging
@@ -126,21 +114,6 @@ def ImageFilter(x, y, data, night):
         log(f'[ImageFilter][Resolution Check - Y] Got {y} | Needed {s["res"]["monitor-y"]}')
         log(f'[ImageFilter] ------------------------------------------------------------------------------------')
         return False
-    if calculate_aspect(x, y) != s['res']['aspect-ratio']:
-        log(f'[ImageFilter][Aspect Ratio Check] Failed for {FileID}')
-        log(f'[ImageFilter][Aspect Ratio Check] Got {calculate_aspect(x, y)} | Needed {s["res"]["aspect-ratio"]}')
-        log(f'[ImageFilter] ------------------------------------------------------------------------------------')
-        return False
-    if x >= s['res']['max-x']:
-        log(f'[ImageFilter][Max Resolution Check - X] Failed for {FileID}')
-        log(f'[ImageFilter][Max Resolution Check - X] Got {x} | Needed {s["res"]["max-x"]}')
-        log(f'[ImageFilter] ------------------------------------------------------------------------------------')
-        return False
-    if y >= s['res']['max-y']:
-      log(f'[ImageFilter][Max Resolution Check - Y] Failed for {FileID}')
-      log(f'[ImageFilter][Max Resolution Check - Y] Got {y} | Needed {s["res"]["max-y"]}')
-      log(f'[ImageFilter] ------------------------------------------------------------------------------------')
-      return False
     if FileType != 'jpeg' and FileType != 'png' and FileType != 'jpg':
         log(f'[ImageFilter][File Type Check] Failed for {FileID}')
         log(f'[ImageFilter][File Type Check] Got {FileType}')
